@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registros - Otros</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+    h1 { color: #003366; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #e0f0ff; }
+    button { padding: 8px 16px; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #005599; }
+  </style>
+</head>
+<body>
+
+  <h1>Registros - Otros</h1>
+  <a href="{% url 'registrar_otro' %}"><button>➕ Agregar Registro</button></a>
+  <a href="{% url 'menu_facturas' %}"><button>← Volver al Menú</button></a>
+
+  <table>
+    <tr>
+      <th>Tipo</th>
+      <th>Fecha</th>
+      <th>Descripción</th>
+      <th>Monto</th>
+      <th>Documento</th>
+    </tr>
+    {% for otro in otros %}
+    <tr>
+      <td>{{ otro.get_tipo_display }}</td>
+      <td>{{ otro.fecha }}</td>
+      <td>{{ otro.descripcion|truncatechars:50 }}</td>
+      <td>
+        {% if otro.monto %}
+          ${{ otro.monto|floatformat:0 }}
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td>
+        {% if otro.documento %}
+          <a href="{{ otro.documento.url }}" target="_blank">Ver documento</a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No hay registros en esta sección.</td></tr>
+    {% endfor %}
+  </table>
+
+</body>
+</html>

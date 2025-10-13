@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Menú de Módulos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .menu-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .module {
+            background: #760c0cff;
+            color: #fff;
+            text-decoration: none;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+            font-size: 18px;
+        }
+        .module:hover {
+            background: #be0707ff;
+        }
+    </style>
+</head>
+<body>
+      <div class="logo">
+  <img src="{% static 'img/logo.png' %}" alt="Logo Empresa" style="max-height: 50px;">
+
+</div>
+    <h1>MENU DE OPCIONES JD RENTAL MIX</h1>
+    <div class="menu-container">
+        <a class="module" href="{% url 'creacion_cliente'%}">Creación de Clientes</a>
+        <a class="module" href="{% url 'crear_producto'%}">Creación de Productos</a>
+        <a class="module" href="cotizaciones">Cotizaciones</a>
+        <a class="module" href="orden_compra">Orden de Compra</a>
+        <a class="module" href="ingreso_compra">Ingreso de Compra</a>
+        <a class="module" href="consulta_codigo">Consulta Código</a>
+        <a class="module" href="{% url 'base_datos' %}">Base de Datos Clientes</a>
+        <a class="module" href="{% url 'listar_productos' %}">Base de Datos Productos</a>
+        <a class="module" href="#">Costos Fijos 2024</a>
+        <a class="module" href="#">Costos Fijos 2025</a>
+        <a class="module" href="consulta_compra">Consulta Compra</a>
+        <a class="module" href="gardilcic">Cta Cte Gardilcic</a>
+        <a class="module" href="{% url 'index' %}">Volver</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Base de Datos - Clientes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #575757;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: auto;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2>Listado de Clientes</h2>
+
+    <form method="get" action="">
+        <input type="text" name="q" placeholder="Buscar por RUT o Nombre" value="{{ request.GET.q }}">
+        <button type="submit">Buscar</button>
+    </form>
+    <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>RUT</th>
+                <th>Dirección</th>
+                <th>Número Teléfono</th>
+                <th>Correo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.rut }}</td>
+                <td>{{ cliente.direccion }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.correo }}</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No se encontraron clientes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

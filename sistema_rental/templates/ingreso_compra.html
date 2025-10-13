@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Ingreso de Compra</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Agregando Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body { margin:20px; }
+        .small { width:100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mt-4 mb-4">Ingreso de Compra</h2>
+        <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
+        <form id="compraForm" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" name="fecha" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Factura / Documento</label>
+                <input type="text" name="factura" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Proveedor</label>
+                <input type="text" name="proveedor" required class="form-control">
+            </div>
+            <hr>
+            <h3 class="mt-4">Agregar producto</h3>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>Descripción</label>
+                    <input type="text" id="descripcion" placeholder="Descripción del producto" class="form-control">
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Cantidad</label>
+                    <input type="number" id="cantidad" min="0" step="1" value="1" class="form-control small">
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Precio unitario</label>
+                    <input type="number" id="p_unitario" min="0" step="0.01" value="0.00" class="form-control small">
+                </div>
+                <div class="form-group col-md-2">
+                    <label>% IVA</label>
+                    <input type="number" id="iva_porcentaje" min="0" step="0.01" value="19" class="form-control small">
+                </div>
+            </div>
+            <div class="form-row mb-3">
+                <div class="form-group col-md-4">
+                    <label class="d-block">Neto</label>
+                    <input type="text" id="neto" readonly class="form-control small">
+                </div>
+                <div class="form-group col-md-4">
+                    <label class="d-block">Impuesto (IVA)</label>
+                    <input type="text" id="impuesto" readonly class="form-control small">
+                </div>
+                <div class="form-group col-md-4">
+                    <label class="d-block">Total línea</label>
+                    <input type="text" id="total_linea" readonly class="form-control small">
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary mb-4" onclick="addProduct()">Agregar producto</button>
+            <table id="productosTable" class="table table-striped" aria-live="polite">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Descripción</th>
+                        <th>Fecha</th>
+                        <th>Factura</th>
+                        <th>Proveedor</th>
+                        <th class="text-right">Cantidad</th>
+                        <th class="text-right">P. Unitario</th>
+                        <th class="text-right">Neto</th>
+                        <th class="text-right">IVA %</th>
+                        <th class="text-right">Impuesto</th>
+                        <th class="text-right">Total</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- filas agregadas dinámicamente -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="7" class="text-right">Totales</th>
+                        <th class="text-right" id="sum_neto">0.00</th>
+                        <th></th>
+                        <th class="text-right" id="sum_impuesto">0.00</th>
+                        <th class="text-right" id="sum_total">0.00</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- campos ocultos para enviar productos como arreglos al backend -->
+            <div id="hiddenInputs"></div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Guardar Compra</button>
+                <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Se actualiza la función para redondear sin decimales y aplicar separador de miles
+        function fmt(n){ 
+            return Math.round(n).toLocaleString('es-ES');
+        }
+
+        let productos = [];
+
+        function calculateLine(){
+            const qty = Number(document.getElementById('cantidad').value) || 0;
+            const pu = Number(document.getElementById('p_unitario').value) || 0;
+            const iva_pct = Number(document.getElementById('iva_porcentaje').value) || 0;
+
+            const neto = qty * pu;
+            const impuesto = neto * (iva_pct / 100);
+            const total = neto + impuesto;
+
+            document.getElementById('neto').value = fmt(neto);
+            document.getElementById('impuesto').value = fmt(impuesto);
+            document.getElementById('total_linea').value = fmt(total);
+        }
+
+        // recalcular línea cuando cambian inputs
+        ['cantidad','p_unitario','iva_porcentaje'].forEach(id=>{
+            document.getElementById(id).addEventListener('input', calculateLine);
+        });
+        // iniciar calc
+        calculateLine();
+
+        function updateTotals(){
+            let sumN=0, sumI=0, sumT=0;
+            productos.forEach(p => { sumN += p.neto; sumI += p.impuesto; sumT += p.total; });
+            document.getElementById('sum_neto').textContent = fmt(sumN);
+            document.getElementById('sum_impuesto').textContent = fmt(sumI);
+            document.getElementById('sum_total').textContent = fmt(sumT);
+        }
+
+        function renderTable(){
+            const tbody = document.querySelector('#productosTable tbody');
+            tbody.innerHTML = '';
+            productos.forEach((p, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx+1}</td>
+                    <td>${escapeHtml(p.descripcion)}</td>
+                    <td>${escapeHtml(p.fecha)}</td>
+                    <td>${escapeHtml(p.factura)}</td>
+                    <td>${escapeHtml(p.proveedor)}</td>
+                    <td class="right">${p.cantidad}</td>
+                    <td class="right">${fmt(p.p_unitario)}</td>
+                    <td class="right">${fmt(p.neto)}</td>
+                    <td class="right">${fmt(p.iva_porcentaje)}</td>
+                    <td class="right">${fmt(p.impuesto)}</td>
+                    <td class="right">${fmt(p.total)}</td>
+                    <td><button type="button" class="btn btn-danger" onclick="removeProduct(${idx})">Eliminar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateHiddenInputs();
+            updateTotals();
+        }
+
+        function addProduct(){
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const cantidad = Number(document.getElementById('cantidad').value) || 0;
+            const p_unitario = Number(document.getElementById('p_unitario').value) || 0;
+            const iva_porcentaje = Number(document.getElementById('iva_porcentaje').value) || 0;
+            // Capturar los valores globales del formulario
+            const fechaVal = document.querySelector('input[name="fecha"]').value.trim();
+            const facturaVal = document.querySelector('input[name="factura"]').value.trim();
+            const proveedorVal = document.querySelector('input[name="proveedor"]').value.trim();
+            
+            if(!descripcion){ alert('Ingrese descripción'); return; }
+            if(cantidad <= 0){ alert('Cantidad debe ser mayor a 0'); return; }
+            
+            const neto = cantidad * p_unitario;
+            const impuesto = neto * (iva_porcentaje / 100);
+            const total = neto + impuesto;
+            
+            productos.push({
+                descripcion, cantidad, p_unitario, iva_porcentaje,
+                neto, impuesto, total,
+                fecha: fechaVal, factura: facturaVal, proveedor: proveedorVal
+            });
+            
+            // limpiar campos para siguiente ingreso
+            document.getElementById('descripcion').value = '';
+            document.getElementById('cantidad').value = 1;
+            document.getElementById('p_unitario').value = '0.00';
+            document.getElementById('iva_porcentaje').value = '19';
+            calculateLine();
+            renderTable();
+        }
+        
+        function removeProduct(index){
+            productos.splice(index,1);
+            renderTable();
+        }
+
+        function updateHiddenInputs(){
+            const container = document.getElementById('hiddenInputs');
+            container.innerHTML = '';
+            productos.forEach((p, i) => {
+                ['descripcion','cantidad','p_unitario','iva_porcentaje','neto','impuesto','total','fecha','factura','proveedor'].forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `producto_${key}[]`;
+                    input.value = p[key];
+                    container.appendChild(input);
+                });
+            });
+        }
+
+        function escapeHtml(text){
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // evitar envío con lista vacía
+        document.getElementById('compraForm').addEventListener('submit', function(e){
+            if(productos.length === 0){
+                e.preventDefault();
+                alert('Agregue al menos un producto antes de guardar.');
+            }
+            // enviado: Django recibirá arrays con names producto_descripcion[], etc.
+        });
+    </script>
+    <!-- Agregando Bootstrap JS y dependencias -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

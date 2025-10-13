@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Otro - Rentalmix</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    h1 { text-align: center; color: #003366; }
+    label { font-weight: bold; display: block; margin-top: 20px; }
+    select, input[type="date"], input[type="number"], input[type="file"], textarea {
+      margin-top: 10px; padding: 8px; width: 100%; box-sizing: border-box;
+    }
+    button {
+      margin-top: 30px; padding: 10px 20px; background-color: #003366;
+      color: white; border: none; border-radius: 5px; cursor: pointer;
+    }
+    button:hover { background-color: #005599; }
+    .mensaje { margin-top: 20px; color: green; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Registrar Documento - Otros</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label for="tipo">Tipo de registro:</label>
+      <select name="tipo" id="tipo" required>
+        <option value="cotizacion">Cotización</option>
+        <option value="ajuste">Ajuste</option>
+        <option value="nota">Nota interna</option>
+        <option value="gasto">Gasto menor</option>
+        <option value="ingreso">Ingreso menor</option>
+        <option value="reclamo">Patente</option>
+        <option value="otro">Otro</option>
+        
+      </select>
+
+      <label for="descripcion">Descripción:</label>
+      <textarea name="descripcion" id="descripcion" rows="4" required></textarea>
+
+      <label for="fecha">Fecha:</label>
+      <input type="date" name="fecha" id="fecha" required>
+
+      <label for="monto">Monto (opcional):</label>
+      <input type="number" name="monto" id="monto" step="0.01">
+
+      <label for="documento">Documento adjunto (opcional):</label>
+      <input type="file" name="documento" id="documento" accept=".pdf,.jpg,.png">
+
+      <button type="submit">Guardar Registro</button>
+    </form>
+
+    {% if mensaje %}
+      <div class="mensaje">{{ mensaje }}</div>
+    {% endif %}
+  </div>
+
+</body>
+</html>

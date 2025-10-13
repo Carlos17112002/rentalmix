@@ -1,0 +1,151 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Consulta de código</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body { margin: 20px; font-size: 18px; }
+    input[readonly] { background: #f5f5f5; }
+    table td { cursor: pointer; }
+    #codigo {
+      font-weight: bold;
+      font-size: 20px;
+      color: #d63384;
+      border: 2px solid #d63384;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mt-4 mb-4">Seleccionar producto</h1>
+    <a href="{% url 'menu_rental' %}" class="btn btn-secondary mb-3">← Volver al Menú</a>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="product-select">Descripción (selecciona):</label>
+        <select id="product-select" name="product_id" class="form-control">
+          <option value="">-- Seleccione una descripción --</option>
+          {% for product in products %}
+            <option
+              value="{{ product.id }}"
+              data-codigo="{{ product.codigo }}"
+              data-precio="{{ product.precio_costo_unitario }}"
+              data-fecha="{{ product.fecha_compra|date:'Y-m-d' }}"
+              data-otro="{{ product.otro_campo|default:'' }}"
+            >{{ product.descripcion }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="codigo">Código:</label>
+        <input id="codigo" name="codigo" type="text" readonly class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="precio">Precio unitario:</label>
+        <input id="precio" name="precio_unitario" type="text" readonly class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="fecha">Fecha:</label>
+        <input id="fecha" name="fecha" type="date" readonly class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="otro">Otro campo:</label>
+        <input id="otro" name="otro" type="text" readonly class="form-control">
+      </div>
+
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+        <button type="button" id="limpiar" class="btn btn-secondary">Limpiar</button>
+      </div>
+    </form>
+
+    <h2 class="mt-5">Listado rápido</h2>
+    <table class="table table-striped mt-3">
+      <thead>
+        <tr>
+          <th>Descripción</th><th>Código</th><th>Precio</th><th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr data-id="{{ product.id }}">
+          <td>{{ product.descripcion }}</td>
+          <td>{{ product.codigo }}</td>
+          <td>${{ product.precio_costo_unitario|floatformat:0 }}</td>
+          <td>{{ product.fecha_compra|date:'d/m/Y' }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No hay productos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const select = document.getElementById('product-select');
+      const codigo = document.getElementById('codigo');
+      const precio = document.getElementById('precio');
+      const fecha = document.getElementById('fecha');
+      const otro = document.getElementById('otro');
+      const limpiarBtn = document.getElementById('limpiar');
+
+      function formatearCLP(valor) {
+        return parseFloat(valor).toLocaleString('es-CL', {
+          style: 'decimal',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+      }
+
+      function preloadFromOption(opt) {
+        if (!opt || !opt.dataset) {
+          codigo.value = precio.value = fecha.value = otro.value = '';
+          return;
+        }
+        codigo.value = opt.dataset.codigo || '';
+        precio.value = opt.dataset.precio && !isNaN(opt.dataset.precio)
+          ? `$${formatearCLP(opt.dataset.precio)}`
+          : '';
+        fecha.value = opt.dataset.fecha || '';
+        otro.value = opt.dataset.otro || '';
+      }
+
+      select.addEventListener('change', function () {
+        const opt = select.selectedOptions[0];
+        preloadFromOption(opt);
+      });
+
+      document.querySelectorAll('table tbody tr[data-id]').forEach(function (tr) {
+        tr.addEventListener('click', function () {
+          const id = tr.getAttribute('data-id');
+          const option = Array.from(select.options).find(o => o.value === id);
+          if (option) {
+            select.value = id;
+            preloadFromOption(option);
+            option.scrollIntoView({ block: 'nearest' });
+          }
+        });
+      });
+
+      limpiarBtn.addEventListener('click', function () {
+        select.value = '';
+        preloadFromOption(null);
+      });
+    });
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

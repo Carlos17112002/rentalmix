@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Libros de Compra</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+    h1 { color: #003366; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #e0f0ff; }
+    button {
+      padding: 8px 16px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #005599; }
+  </style>
+</head>
+<body>
+
+  <h1>Libros de Compra</h1>
+<a href="{% url 'subir_libro_compras' %}"><button>➕ Agregar Libro</button></a>
+<a href="{% url 'menu_facturas' %}"><button>← Volver al Menú</button></a>
+
+<table>
+  <tr>
+    <th>Fecha</th>
+    <th>Total</th>
+    <th>Pagado</th>
+    <th>Archivo</th>
+    <th>Estado</th>
+    <th>Acciones</th>
+  </tr>
+  {% for compra in compras %}
+  <tr>
+    <td>{{ compra.fecha }}</td>
+    <td>${{ compra.total|floatformat:0 }}</td>
+    <td>{{ compra.pagado|yesno:"Sí,No" }}</td>
+    <td>
+      {% if compra.archivo %}
+        <a href="{{ compra.archivo.url }}" target="_blank">Descargar Archivo</a>
+      {% else %}
+        —
+      {% endif %}
+    </td>
+    <td>
+      {% if compra.estado == 'procesando' %}
+        <span style="color: orange;">Procesando</span>
+      {% elif compra.estado == 'correcto' %}
+        <span style="color: green;">Correcto</span>
+      {% elif compra.estado == 'error' %}
+        <span style="color: red;">Error</span>
+      {% endif %}
+    </td>
+   <td>
+  <a href="{% url 'revisar_libro' compra.id %}">Revisar</a> |
+  <a href="{% url 'eliminar_libro' compra.id %}" onclick="return confirm('¿Estás seguro de que deseas eliminar este libro?');" style="color: red;">Eliminar</a>
+  {% if compra.estado == 'correcto' %}
+    | <a href="{% url 'pagar_libro' compra.id %}" style="color: green;">Pagar</a>
+  {% endif %}
+</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">No hay libros registrados.</td></tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>

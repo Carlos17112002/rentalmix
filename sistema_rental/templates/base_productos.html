@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .search-form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .search-form input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .search-form button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-form button:hover {
+            background-color: #575757;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        thead {
+            background: #333;
+            color: #fff;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        tbody tr:hover {
+            background: #f1f1f1;
+        }
+        @media (max-width: 768px) {
+            table, .search-form input[type="text"] {
+                font-size: 14px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Listado de Productos</h1>
+    <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
+    <div class="search-form">
+        <form method="get" action="">
+            <input type="text" name="buscar" placeholder="Buscar por nombre o código" value="{{ request.GET.buscar }}">
+            <button type="submit">Filtrar</button>
+        </form>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Código</th>
+                <th>Precio Costo Unitario</th>
+                <th>Fecha de Compra</th>
+                <th>Última Compra</th>
+                <th>Proveedor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.descripcion }}</td>
+                <td>{{ producto.codigo }}</td>
+                <td>{{ producto.precio_costo_unitario }}</td>
+                <td>{{ producto.fecha_compra }}</td>
+                <td>{{ producto.ultima_compra }}</td>
+                <td>{{ producto.proveedor }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No hay productos disponibles.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

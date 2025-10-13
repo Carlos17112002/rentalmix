@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Revisar y Editar Libro de Compra</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 40px;
+    }
+    .container {
+      max-width: 100%;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #003366;
+      margin-bottom: 30px;
+    }
+    .info p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .info strong {
+      color: #003366;
+    }
+    .archivo-link {
+      display: inline-block;
+      margin-top: 5px;
+      color: #005599;
+      text-decoration: none;
+    }
+    .archivo-link:hover {
+      text-decoration: underline;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 30px;
+    }
+    select {
+      padding: 8px;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005599;
+    }
+    table {
+      min-width: 1200px;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      background-color: #e0f0ff;
+      position: sticky;
+      top: 0;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 4px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Revisar y Editar Libro de Compra</h1>
+
+    <div class="info">
+      <p><strong>Fecha:</strong> {{ libro.fecha }}</p>
+      <p><strong>Total:</strong> ${{ libro.total }}</p>
+      <p><strong>Pagado:</strong> {{ libro.pagado|yesno:"Sí,No" }}</p>
+      <p><strong>Archivo:</strong>
+        {% if libro.archivo %}
+          <a class="archivo-link" href="{{ libro.archivo.url }}" target="_blank">{{ libro.nombre_archivo }}</a>
+        {% else %}
+          —
+        {% endif %}
+      </p>
+      <p><strong>Estado actual:</strong> {{ libro.get_estado_display }}</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <label for="estado">Actualizar estado:</label>
+      <select name="estado" id="estado">
+        <option value="correcto" {% if libro.estado == 'correcto' %}selected{% endif %}>Correctamente procesado</option>
+        <option value="error" {% if libro.estado == 'error' %}selected{% endif %}>Error al procesar</option>
+      </select>
+
+      {% if encabezados and contenido %}
+        <table>
+          <thead>
+            <tr>
+              {% for th in encabezados %}
+                <th>{{ th }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in contenido %}
+              <tr>
+                {% for celda in fila %}
+                  <td>
+                    <input type="text" name="celda_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" value="{{ celda }}">
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <button type="submit">Guardar cambios</button>
+    </form>
+  </div>
+
+</body>
+</html>

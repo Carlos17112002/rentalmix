@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Menú Principal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 40px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      max-height: 60px;
+    }
+    h1 {
+      text-align: center;
+      color: #410304;
+      margin-bottom: 30px;
+    }
+    .menu-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+    .module {
+      background: #410304;
+      color: #fff;
+      text-decoration: none;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .module1 {
+      background: #194468ff;
+      color: #fff;
+      text-decoration: none;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0, 38, 255, 0.1);
+    }
+    .module1:hover {
+      background: #0077cc;
+    }
+    .module:hover {
+      background: #be0707;
+    }
+    .module2 {
+      background: #526819ff;
+      color: #fff;
+      text-decoration: none;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0, 38, 255, 0.1);
+    }
+    .module2:hover {
+      background: #aacc00ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="{% static 'img/logo.png' %}" alt="Logo Empresa">
+  </div>
+
+  <h1>MENÚ PRINCIPAL</h1>
+
+  <div class="menu-container">
+    <a class="module1" href="{% url 'menu_facturas' %}">Menú Facturas</a>
+    <a class="module" href="{% url 'menu_rental' %}">Menú JD RENTAL MIX</a>
+    <a class="module2" href="{% url 'menu_informes'%}">INFORMES</a>
+  </div>
+
+</body>
+</html>

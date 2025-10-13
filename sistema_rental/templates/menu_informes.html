@@ -1,0 +1,156 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe por Sección</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 30px; font-size: 18px; background-color: #f8f9fa; }
+    h1 { text-align: center; margin-bottom: 40px; }
+    table th, table td { text-align: center; vertical-align: middle; }
+    .btn-group { margin-bottom: 20px; }
+    .seccion { display: none; margin-top: 40px; }
+    .seccion.visible { display: block; }
+    @media print {
+      .no-print, .btn-group,
+      .seccion:not(.visible) {
+        display: none !important;
+      }
+      .seccion.visible {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Informe General por Sección</h1>
+
+  <div class="btn-group no-print">
+    <a href="{% url 'index' %}" class="btn btn-secondary">← Volver al Menú</a>
+    <button onclick="toggleSeccion('clientes')" class="btn btn-outline-primary">Clientes</button>
+    <button onclick="toggleSeccion('productos')" class="btn btn-outline-success">Productos</button>
+    <button onclick="toggleSeccion('cotizaciones')" class="btn btn-outline-warning">Cotizaciones</button>
+    <button onclick="toggleSeccion('detalles')" class="btn btn-outline-info">Detalles</button>
+    <button onclick="window.print()" class="btn btn-dark">🖨️ Imprimir / Descargar PDF</button>
+  </div>
+
+  <!-- CLIENTES -->
+  <div id="clientes" class="seccion">
+    <h3>Clientes</h3>
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr><th>ID</th><th>Nombre</th><th>RUT</th><th>Email</th><th>Teléfono</th></tr>
+      </thead>
+      <tbody>
+        {% for cliente in clientes %}
+        <tr>
+          <td>{{ cliente.id }}</td>
+          <td>{{ cliente.nombre }}</td>
+          <td>{{ cliente.rut }}</td>
+          <td>{{ cliente.correo }}</td>
+          <td>{{ cliente.telefono }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No hay clientes registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div id="productos" class="seccion">
+    <h3>Productos</h3>
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr><th>ID</th><th>Descripción</th><th>Código</th><th>Precio</th><th>Fecha de Compra</th><th>Proveedor</th></tr>
+      </thead>
+      <tbody>
+        {% for producto in productos %}
+        <tr>
+          <td>{{ producto.id }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td><strong style="color:#d63384">{{ producto.codigo }}</strong></td>
+          <td>${{ producto.precio_costo_unitario|floatformat:0 }}</td>
+          <td>{{ producto.fecha_compra|date:"d/m/Y" }}</td>
+          <td>{{ producto.proveedor }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No hay productos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COTIZACIONES -->
+  <div id="cotizaciones" class="seccion">
+    <h3>Cotizaciones</h3>
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr><th>ID</th><th>Fecha</th><th>Total Neto</th><th>IVA</th><th>Total Final</th><th>Observaciones</th></tr>
+      </thead>
+      <tbody>
+        {% for cot in cotizaciones %}
+        <tr>
+          <td>{{ cot.id }}</td>
+          <td>{{ cot.fecha|date:"d/m/Y H:i" }}</td>
+          <td>${{ cot.total_neto|intcomma }}</td>
+          <td>${{ cot.total_iva|intcomma }}</td>
+          <td>${{ cot.total_final|intcomma }}</td>
+          <td>{{ cot.observaciones }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No hay cotizaciones registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DETALLES -->
+  <div id="detalles" class="seccion">
+    <h3>Detalle de Productos Cotizados</h3>
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Cotización #</th><th>Producto</th><th>Código</th><th>Precio Unitario</th>
+          <th>Cantidad</th><th>Subtotal</th><th>IVA</th><th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for detalle in detalles %}
+        <tr>
+          <td>{{ detalle.cotizacion.id }}</td>
+          <td>{{ detalle.producto }}</td>
+          <td><strong style="color:#0d6efd">{{ detalle.codigo }}</strong></td>
+          <td>${{ detalle.precio_unitario|intcomma }}</td>
+          <td>{{ detalle.cantidad }}</td>
+          <td>${{ detalle.subtotal|intcomma }}</td>
+          <td>${{ detalle.iva|intcomma }}</td>
+          <td>${{ detalle.total|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No hay productos cotizados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function toggleSeccion(id) {
+      document.querySelectorAll('.seccion').forEach(div => {
+        if (div.id === id) {
+          div.style.display = 'block';
+          div.classList.add('visible');
+        } else {
+          div.style.display = 'none';
+          div.classList.remove('visible');
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Venta - Rentalmix</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    h1 { text-align: center; color: #003366; }
+    label { font-weight: bold; display: block; margin-top: 20px; }
+    input[type="text"], input[type="date"], input[type="number"], input[type="file"] {
+      margin-top: 10px; padding: 8px; width: 100%; box-sizing: border-box;
+    }
+    .checkbox { margin-top: 20px; }
+    button {
+      margin-top: 30px; padding: 10px 20px; background-color: #003366;
+      color: white; border: none; border-radius: 5px; cursor: pointer;
+    }
+    button:hover { background-color: #005599; }
+    .mensaje { margin-top: 20px; color: green; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Registrar Venta</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label for="fecha">Fecha de la venta:</label>
+      <input type="date" name="fecha" id="fecha" required>
+
+      <label for="cliente">Cliente:</label>
+      <input type="text" name="cliente" id="cliente" required>
+
+      <label for="total">Total venta (CLP):</label>
+      <input type="number" name="total" id="total" step="0.01" required>
+
+      <label for="documento">Documento asociado (opcional):</label>
+      <input type="file" name="documento" id="documento" accept=".pdf,.jpg,.png">
+
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="pagado" id="pagado"> Marcar como pagado
+        </label>
+      </div>
+
+      <button type="submit">Guardar Venta</button>
+    </form>
+
+    {% if mensaje %}
+      <div class="mensaje">{{ mensaje }}</div>
+    {% endif %}
+  </div>
+
+</body>
+</html>

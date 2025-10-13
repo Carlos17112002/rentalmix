@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas Registradas</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
+    h1 { color: #003366; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #e0f0ff; }
+    button { padding: 8px 16px; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #005599; }
+  </style>
+</head>
+<body>
+
+  <h1>Ventas Registradas</h1>
+  <a href="{% url 'registrar_venta' %}"><button>➕ Registrar Venta</button></a>
+  <a href="{% url 'menu_facturas' %}"><button>← Volver al Menú</button></a>
+
+  <table>
+    <tr>
+      <th>Fecha</th>
+      <th>Cliente</th>
+      <th>Total</th>
+      <th>Pagado</th>
+      <th>Documento</th>
+    </tr>
+    {% for venta in ventas %}
+    <tr>
+      <td>{{ venta.fecha }}</td>
+      <td>{{ venta.cliente }}</td>
+      <td>${{ venta.total|floatformat:0 }}</td>
+      <td>{{ venta.pagado|yesno:"Sí,No" }}</td>
+      <td>
+        {% if venta.documento %}
+          <a href="{{ venta.documento.url }}" target="_blank">Ver documento</a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No hay ventas registradas.</td></tr>
+    {% endfor %}
+  </table>
+
+</body>
+</html>

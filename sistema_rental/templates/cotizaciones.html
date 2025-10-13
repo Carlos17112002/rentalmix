@@ -1,0 +1,255 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cotización</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      padding: 30px;
+      font-size: 18px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    input, select, textarea {
+      font-size: 18px;
+    }
+    .table th, .table td {
+      vertical-align: middle;
+      text-align: center;
+    }
+    .totales {
+      font-weight: bold;
+      text-align: right;
+    }
+    .btn-lg {
+      font-size: 18px;
+      padding: 10px 20px;
+    }
+    .preview {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-top: 30px;
+    }
+    @media print {
+      .no-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cotización</h1>
+  <div class="mb-3">
+    <a href="{% url 'menu_rental' %}" class="btn btn-secondary btn-lg no-print">← Volver al Menú</a>
+  </div>
+
+  <form class="no-print">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="producto">Producto</label>
+        <select id="producto" class="form-select" onchange="actualizarProducto()">
+          <option value="">-- Seleccione --</option>
+          {% for producto in productos %}
+            <option 
+              data-codigo="{{ producto.codigo }}" 
+              data-precio="{{ producto.precio_costo_unitario }}">
+              {{ producto.descripcion }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="codigo">Código</label>
+        <input type="text" id="codigo" class="form-control" readonly>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="precio">Precio Unitario</label>
+        <input type="number" id="precio" class="form-control" readonly>
+      </div>
+      <div class="col-md-4">
+        <label for="iva">IVA (%)</label>
+        <input type="number" id="iva" class="form-control" value="19" onchange="actualizarProducto()">
+      </div>
+      <div class="col-md-4">
+        <label for="cantidad">Cantidad</label>
+        <input type="number" id="cantidad" class="form-control" value="1" min="1" onchange="actualizarProducto()">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label>Subtotal sin IVA</label>
+        <input type="text" id="subtotal" class="form-control" readonly>
+      </div>
+      <div class="col-md-4">
+        <label>Monto de IVA</label>
+        <input type="text" id="monto_iva" class="form-control" readonly>
+      </div>
+      <div class="col-md-4">
+        <label>Total con IVA</label>
+        <input type="text" id="total" class="form-control" readonly>
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button type="button" class="btn btn-primary btn-lg" id="btnAgregar">Agregar al detalle</button>
+    </div>
+  </form>
+
+  <table class="table table-bordered mt-4">
+    <thead class="table-light">
+      <tr>
+        <th>Producto</th>
+        <th>Código</th>
+        <th>Precio Unitario</th>
+        <th>Cantidad</th>
+        <th>Subtotal</th>
+        <th>IVA</th>
+        <th>Total</th>
+        <th class="no-print">Acción</th>
+      </tr>
+    </thead>
+    <tbody id="detalle"></tbody>
+    <tfoot>
+      <tr><td colspan="4" class="totales">Total sin IVA:</td><td colspan="4" id="total_sin_iva">$0.00</td></tr>
+      <tr><td colspan="4" class="totales">Total IVA:</td><td colspan="4" id="total_iva">$0.00</td></tr>
+      <tr><td colspan="4" class="totales">Total con IVA:</td><td colspan="4" id="total_con_iva">$0.00</td></tr>
+    </tfoot>
+  </table>
+
+  <label class="mt-4">Observaciones</label>
+  <textarea class="form-control no-print" rows="3" placeholder="Notas para la cotización..." id="observaciones"></textarea>
+
+  <div class="text-end no-print mt-4">
+    <button onclick="window.print()" class="btn btn-success btn-lg">Imprimir Cotización</button>
+  </div>
+
+  <div class="preview">
+    <h4>Vista previa rápida</h4>
+    <p><strong>RENTALMIX</strong> - Cotización rápida</p>
+    <p>Total sin IVA: <span id="preview_sin_iva">$0.00</span></p>
+    <p>Total IVA: <span id="preview_iva">$0.00</span></p>
+    <p>Total: <span id="preview_total">$0.00</span></p>
+  </div>
+
+ <script>
+  function actualizarProducto() {
+    const select = document.getElementById('producto');
+    const option = select.options[select.selectedIndex];
+    const codigo = option.getAttribute('data-codigo');
+    const precio = parseFloat(option.getAttribute('data-precio')) || 0;
+    const cantidad = parseFloat(document.getElementById('cantidad').value) || 1;
+    const iva = parseFloat(document.getElementById('iva').value) || 0;
+
+    const subtotal = precio * cantidad;
+    const montoIVA = subtotal * (iva / 100);
+    const total = subtotal + montoIVA;
+
+    document.getElementById('codigo').value = codigo || '';
+    document.getElementById('precio').value = precio;
+    document.getElementById('subtotal').value = `$${formatearCLP(subtotal)}`;
+    document.getElementById('monto_iva').value = `$${formatearCLP(montoIVA)}`;
+    document.getElementById('total').value = `$${formatearCLP(total)}`;
+  }
+
+  function agregarProducto() {
+    const select = document.getElementById('producto');
+    const producto = select.options[select.selectedIndex].text;
+    const codigo = document.getElementById('codigo').value;
+    const precio = parseFloat(document.getElementById('precio').value);
+    const cantidad = parseFloat(document.getElementById('cantidad').value);
+    const iva = parseFloat(document.getElementById('iva').value);
+    const subtotal = precio * cantidad;
+    const montoIVA = subtotal * (iva / 100);
+    const total = subtotal + montoIVA;
+
+    if (!codigo || !precio || !cantidad || !producto || producto === "-- Seleccione --") {
+      alert("Por favor selecciona un producto válido.");
+      return;
+    }
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${producto}</td>
+      <td>${codigo}</td>
+      <td>$${formatearCLP(precio)}</td>
+      <td>${cantidad}</td>
+      <td>$${formatearCLP(subtotal)}</td>
+      <td>$${formatearCLP(montoIVA)}</td>
+      <td>$${formatearCLP(total)}</td>
+      <td class="no-print">
+        <button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); actualizarTotales()">Eliminar</button>
+      </td>
+    `;
+    document.getElementById('detalle').appendChild(row);
+    actualizarTotales();
+
+    // Reset campos
+    document.getElementById('producto').selectedIndex = 0;
+    document.getElementById('codigo').value = '';
+    document.getElementById('precio').value = '';
+    document.getElementById('cantidad').value = 1;
+    document.getElementById('subtotal').value = '';
+    document.getElementById('monto_iva').value = '';
+    document.getElementById('total').value = '';
+  }
+
+  function limpiarNumero(texto) {
+    return parseFloat(texto.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+  }
+
+  function actualizarTotales() {
+    let neto = 0;
+    let ivaTotal = 0;
+    document.querySelectorAll('#detalle tr').forEach(row => {
+      const subtotal = limpiarNumero(row.cells[4].textContent);
+      const iva = limpiarNumero(row.cells[5].textContent);
+      neto += subtotal;
+      ivaTotal += iva;
+    });
+    const totalFinal = neto + ivaTotal;
+
+    document.getElementById('total_sin_iva').textContent = `$${formatearCLP(neto)}`;
+    document.getElementById('total_iva').textContent = `$${formatearCLP(ivaTotal)}`;
+    document.getElementById('total_con_iva').textContent = `$${formatearCLP(totalFinal)}`;
+
+    document.getElementById('preview_sin_iva').textContent = `$${formatearCLP(neto)}`;
+    document.getElementById('preview_iva').textContent = `$${formatearCLP(ivaTotal)}`;
+    document.getElementById('preview_total').textContent = `$${formatearCLP(totalFinal)}`;
+  }
+
+  function formatearCLP(valor) {
+    return valor.toLocaleString('es-CL', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  }
+
+  window.onload = () => {
+    actualizarProducto();
+    document.getElementById('producto').addEventListener('change', actualizarProducto);
+    document.getElementById('cantidad').addEventListener('change', actualizarProducto);
+    document.getElementById('iva').addEventListener('change', actualizarProducto);
+    document.getElementById('btnAgregar').addEventListener('click', agregarProducto);
+  };
+</script>
+
+</body>
+</html>

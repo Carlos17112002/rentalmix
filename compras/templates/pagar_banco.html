@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Seleccionar Banco</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #003366;
+      margin-bottom: 30px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 10px;
+    }
+    select {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005599;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Pagar Libro de Compra</h1>
+
+    <p><strong>Fecha:</strong> {{ libro.fecha }}</p>
+    <p><strong>Total:</strong> ${{ libro.total }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <label for="banco">Selecciona el banco:</label>
+      <select name="banco" id="banco" required>
+        <option value="">-- Selecciona --</option>
+        <option value="banco_chile">Banco de Chile</option>
+        <option value="scotiabank">Scotiabank</option>
+      </select>
+      <button type="submit">Confirmar Pago</button>
+    </form>
+  </div>
+
+</body>
+</html>
