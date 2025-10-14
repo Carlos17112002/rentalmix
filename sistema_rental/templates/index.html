@@ -10,6 +10,8 @@
       background: #f4f4f4;
       margin: 0;
       padding: 40px;
+      background-image: url('{% static 'img/oa2i_1p69_180305.jpg' %}');
+      background-size: cover;
     }
     .logo {
       text-align: center;
@@ -46,7 +48,7 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     .module1 {
-      background: #194468ff;
+      background: #6b4003ff;
       color: #fff;
       text-decoration: none;
       width: 220px;
@@ -62,7 +64,7 @@
       box-shadow: 0 4px 8px rgba(0, 38, 255, 0.1);
     }
     .module1:hover {
-      background: #0077cc;
+      background: #cc6d00ff;
     }
     .module:hover {
       background: #be0707;
@@ -86,6 +88,7 @@
     .module2:hover {
       background: #aacc00ff;
     }
+
   </style>
 </head>
 <body>
@@ -94,13 +97,13 @@
     <img src="{% static 'img/logo.png' %}" alt="Logo Empresa">
   </div>
 
+
   <h1>MENÚ PRINCIPAL</h1>
 
   <div class="menu-container">
     <a class="module1" href="{% url 'menu_facturas' %}">Menú Facturas</a>
     <a class="module" href="{% url 'menu_rental' %}">Menú JD RENTAL MIX</a>
-    <a class="module2" href="{% url 'menu_informes'%}">INFORMES</a>
-  </div>
+
 
 </body>
 </html>

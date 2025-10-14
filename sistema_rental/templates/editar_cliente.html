@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Cliente</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f4f4f4;
+    }
+    h2 {
+      text-align: center;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="email"], input[type="tel"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .botones {
+      margin-top: 20px;
+      text-align: right;
+    }
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Editar Cliente</h2>
+  <form method="post">
+    {% csrf_token %}
+    <label>Nombre</label>
+    <input type="text" name="nombre" value="{{ cliente.nombre }}" required>
+
+    <label>RUT</label>
+    <input type="text" name="rut" value="{{ cliente.rut }}" required>
+
+    <label>Dirección</label>
+    <input type="text" name="direccion" value="{{ cliente.direccion }}">
+
+    <label>Teléfono</label>
+    <input type="tel" name="telefono" value="{{ cliente.telefono }}">
+
+    <label>Correo</label>
+    <input type="email" name="correo" value="{{ cliente.correo }}">
+
+    <div class="botones">
+      <a href="{% url 'base_datos' %}"><button type="button">Cancelar</button></a>
+      <button type="submit">Guardar Cambios</button>
+    </div>
+  </form>
+</body>
+</html>

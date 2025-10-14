@@ -2,62 +2,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Listado de Productos Comprados</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <style>
-        body { margin: 20px; background-color: #f8f9fa; }
-        h2 { margin-bottom: 20px; }
-        table { background-color: #fff; }
-        th, td { vertical-align: middle; }
-        tfoot td { font-weight: bold; background-color: #f1f3f5; }
-    </style>
+  <meta charset="utf-8">
+  <title>Listado de Productos Comprados</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body { margin: 20px; background-color: #f8f9fa; }
+    h2 { margin-bottom: 20px; }
+    table { background-color: #fff; }
+    th, td { vertical-align: middle; }
+    tfoot td { font-weight: bold; background-color: #f1f3f5; }
+    .btn-volver { margin-bottom: 20px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Listado de Productos Comprados</h2>
-        <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
-        <table class="table table-bordered table-striped">
-            <thead class="thead-light">
-                <tr>
-                    <th>#</th>
-                    <th>Descripción</th>
-                    <th>Proveedor</th>
-                    <th class="text-right">Precio Unitario</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for producto in productos %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ producto.descripcion }}</td>
-                    <td>{{ producto.proveedor }}</td>
-                    <td class="text-right">${{ producto.p_unitario|floatformat:2 }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center text-muted">No hay productos registrados.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            {% if productos %}
-            <tfoot>
-                <tr>
-                    <td colspan="3" class="text-right">Total de compras</td>
-                    <td class="text-right">
-                        ${% with total=0 %}
-                        {% for producto in productos %}
-                            {% with total=total|add:producto.p_unitario %}
-                            {% endwith %}
-                        {% endfor %}
-                        {{ total|floatformat:2 }}
-                        {% endwith %}
-                    </td>
-                </tr>
-            </tfoot>
-            {% endif %}
-        </table>
-    </div>
+  <div class="container">
+    <h2>Listado de Productos Comprados</h2>
+    <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary btn-volver">← Volver al Menú</a>
+
+    <table class="table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th>#</th>
+          <th>Descripción</th>
+          <th>Proveedor</th>
+          <th class="text-right">Precio Unitario</th>
+          <th class="text-right">Cantidad</th>
+          <th class="text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for producto in productos %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td>{{ producto.compra.proveedor }}</td>
+          <td class="text-right">${{ producto.precio_unitario|floatformat:0 }}</td>
+          <td class="text-right">{{ producto.cantidad }}</td>
+          <td class="text-right">${{ producto.total|floatformat:0 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted">No hay productos registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if productos %}
+      <tfoot>
+        <tr>
+          <td colspan="5" class="text-right">Total de compras</td>
+          <td class="text-right">${{ total_compras|floatformat:0 }}</td>
+
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
 </body>
 </html>

@@ -116,31 +116,97 @@ def cotizaciones(request):
     return render(request, 'cotizaciones.html', {'productos': productos})
 
 
+from django.shortcuts import render, redirect
+
+
+from .models import Compra2, ProductoCompra
+
 def ingreso_compra(request):
     if request.method == 'POST':
-        # Recoger datos del formulario de compra
-        factura = request.POST.get('factura')
-        proveedor = request.POST.get('proveedor')
-        # ...procesar detalles de la compra e insertar en la base de datos...
-        # Ejemplo: Purchase.objects.create(factura=factura, proveedor=proveedor, ...)
-        success = "Compra registrada correctamente."
-        return render(request, 'ingreso_compra.html', {'success': success})
+        compra = Compra2.objects.create(
+            fecha=request.POST.get('fecha'),
+            factura=request.POST.get('factura'),
+            proveedor=request.POST.get('proveedor')
+        )
+
+        index = 0
+        while True:
+            descripcion = request.POST.get(f'descripcion_{index}')
+            if not descripcion:
+                break
+            ProductoCompra.objects.create(
+                compra=compra,
+                descripcion=descripcion,
+                cantidad=int(request.POST.get(f'cantidad_{index}')),
+                precio_unitario=float(request.POST.get(f'p_unitario_{index}')),
+                iva_porcentaje=float(request.POST.get(f'iva_porcentaje_{index}')),
+                neto=float(request.POST.get(f'neto_{index}')),
+                impuesto=float(request.POST.get(f'impuesto_{index}')),
+                total=float(request.POST.get(f'total_{index}'))
+            )
+            index += 1
+
+        return redirect('menu_rental')
     return render(request, 'ingreso_compra.html')
 
-def gardilcic(request):
-    if request.method == 'POST':
-        # Recoger datos del formulario de cuenta corriente
-        mes = request.POST.get('mes')
-        total_pagado = request.POST.get('total')
-        # ...realizar cálculos, actualizar estados de cuenta...
-        # Ejemplo: update_payment(mes, total_pagado)
-        success = "Operación en cuenta ejecutada correctamente."
-        return render(request, 'cta_cte_gardilcic.html', {'success': success})
-    return render(request, 'cta_cte_gardilcic.html')
+from django.shortcuts import render
 
+from django.shortcuts import render, redirect
+from .models import CompraCamiones, VentaCamiones, PagoCamiones
+
+def gardilcic(request):
+    meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
+
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo')  # Para saber de qué formulario viene
+
+        if tipo == 'compra':
+            CompraCamiones.objects.create(
+                mes=request.POST.get('mes'),
+                fecha=request.POST.get('fecha'),
+                factura=request.POST.get('factura'),
+                total=request.POST.get('total'),
+                mensaje=request.POST.get('mensaje'),
+                pagado=True if request.POST.get('pagado') == 'Sí' else False,
+                fecha_pago=request.POST.get('fecha_pago') or None,
+                estado=request.POST.get('estado')
+            )
+
+        elif tipo == 'venta':
+            VentaCamiones.objects.create(
+                mes=request.POST.get('mes'),
+                total=request.POST.get('total')
+            )
+
+        elif tipo == 'pago':
+            PagoCamiones.objects.create(
+                mes=request.POST.get('mes'),
+                total=request.POST.get('total')
+            )
+
+        return redirect('gardilcic')  # Redirige para evitar reenvío del formulario
+
+    # Datos para mostrar en las tablas
+    compras = CompraCamiones.objects.all()
+    ventas = VentaCamiones.objects.all()
+    pagos = PagoCamiones.objects.all()
+
+    return render(request, 'cta_cte_gardilcic.html', {
+        'meses': meses,
+        'compras': compras,
+        'ventas': ventas,
+        'pagos': pagos
+    })
+
+from django.db.models import Sum
 
 def consulta_compra(request):
-    return render(request, 'consulta_compra.html')
+    productos = ProductoCompra.objects.select_related('compra').all()
+    total_compras = productos.aggregate(total=Sum('total'))['total'] or 0
+    return render(request, 'consulta_compra.html', {
+        'productos': productos,
+        'total_compras': total_compras
+    })
 
 def orden_compra(request):
     productos = Producto.objects.all()
@@ -192,3 +258,54 @@ def menu_informes(request):
         'detalles': DetalleCotizacion.objects.select_related('cotizacion').order_by('-cotizacion__fecha')
     }
     return render(request, 'menu_informes.html', context)
+
+def editar_cliente(request, id):
+    cliente = Cliente.objects.get(id=id)
+    if request.method == 'POST':
+        cliente.nombre = request.POST.get('nombre')
+        cliente.rut = request.POST.get('rut')
+        cliente.direccion = request.POST.get('direccion')
+        cliente.telefono = request.POST.get('telefono')
+        cliente.correo = request.POST.get('correo')
+        cliente.save()
+        return redirect('base_datos')  # Asegúrate de tener esta URL definida
+
+    return render(request, 'editar_cliente.html', {'cliente': cliente})
+
+def eliminar_cliente(request, id):
+    cliente = Cliente.objects.get(id=id)
+    if request.method == 'POST':
+        cliente.delete()
+        return redirect('base_datos')  # Asegúrate de tener esta URL definida
+
+    return render(request, 'eliminar_cliente.html', {'cliente': cliente})
+
+def editar_producto(request, id):
+    producto = Producto.objects.get(id=id)
+    if request.method == 'POST':
+        producto.descripcion = request.POST.get('descripcion')
+        producto.codigo = request.POST.get('codigo')
+        producto.precio_costo_unitario = request.POST.get('precio_costo_unitario')
+        producto.fecha_compra = request.POST.get('fecha_compra')
+        producto.ultima_compra = request.POST.get('ultima_compra') or None
+        producto.proveedor = request.POST.get('proveedor')
+        producto.save()
+        return redirect('listar_productos')  # Asegúrate de tener esta URL definida
+
+    return render(request, 'editar_producto.html', {'producto': producto})
+
+def eliminar_producto(request, id):
+    producto = Producto.objects.get(id=id)
+    if request.method == 'POST':
+        producto.delete()
+        return redirect('listar_productos')  # Asegúrate de tener esta URL definida
+
+    return render(request, 'eliminar_producto.html', {'producto': producto})
+
+
+
+def costos_fijos_2024(request):
+    return render(request, 'costos_fijos_2024.html')
+
+def costos_fijos_2025(request):
+    return render(request, 'costos_fijos_2025.html')

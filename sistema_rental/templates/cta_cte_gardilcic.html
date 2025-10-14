@@ -1,341 +1,113 @@
-{% load static dict_extras %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Cuenta Corriente - Arriendo Camiones</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  <meta charset="utf-8">
+  <title>Cuenta Corriente Gardilcic</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
-        }
+<div class="container">
+  <h1>Cuenta Corriente Gardilcic</h1>
+  <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary mb-3">← Volver al Menú</a>
 
-        h1, h2 {
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            color: #343a40;
-        }
+  {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+  {% endif %}
 
-        .card {
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            /* Importante: para que las columnas dentro del row tengan la altura de su contenido */
-            height: 100%; 
-        }
+  <!-- ================== COMPRAS ================== -->
+  <h2>Compras</h2>
+  <form method="post" class="mb-3">
+    {% csrf_token %}
+    <input type="hidden" name="tipo" value="compra">
+    <select name="mes" class="form-control mb-2">
+      <option value="">Mes</option>
+      {% for m in meses %}
+        <option value="{{ m }}">{{ m }}</option>
+      {% endfor %}
+    </select>
+    <input type="date" name="fecha" class="form-control mb-2">
+    <input type="text" name="factura" placeholder="N° Factura" class="form-control mb-2">
+    <input type="number" name="total" placeholder="Total" class="form-control mb-2">
+    <input type="text" name="mensaje" placeholder="Mensaje" class="form-control mb-2">
+    <select name="pagado" class="form-control mb-2">
+      <option value="Sí">Pagado</option>
+      <option value="No">No pagado</option>
+    </select>
+    <input type="date" name="fecha_pago" class="form-control mb-2">
+    <select name="estado" class="form-control mb-2">
+      <option value="Pendiente">Pendiente</option>
+      <option value="Pagado">Pagado</option>
+      <option value="Vencido">Vencido</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Guardar Compra</button>
+  </form>
 
-        /* --- Estilos para Tablas Lado a Lado --- */
-        /* Asegura que el row dentro del container tenga un margen inferior */
-        .content-row {
-            margin-bottom: 2rem;
-        }
+  <table class="table table-bordered">
+    <thead><tr><th>#</th><th>Mes</th><th>Factura</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for c in compras %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ c.mes }}</td>
+          <td>{{ c.factura }}</td>
+          <td>${{ c.total|floatformat:0 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-center">No hay compras</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-        /* Ajusta los h2 dentro del card para que no desborden si el texto es muy largo */
-        .card h2 {
-            font-size: 1.5rem;
-        }
-        /* ------------------------------------- */
+  <!-- ================== VENTAS ================== -->
+  <h2>Ventas</h2>
+  <form method="post" class="mb-3">
+    {% csrf_token %}
+    <input type="hidden" name="tipo" value="venta">
+    <select name="mes" class="form-control mb-2">
+      {% for m in meses %}
+        <option value="{{ m }}">{{ m }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="total" placeholder="Total" class="form-control mb-2">
+    <button type="submit" class="btn btn-primary">Guardar Venta</button>
+  </form>
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
+  <table class="table table-bordered">
+    <thead><tr><th>#</th><th>Mes</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for v in ventas %}
+        <tr><td>{{ forloop.counter }}</td><td>{{ v.mes }}</td><td>${{ v.total| floatformat:0 }}</td></tr>
+      {% empty %}
+        <tr><td colspan="3" class="text-center">No hay ventas</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-        thead {
-            background-color: #e9ecef;
-        }
+  <!-- ================== PAGOS ================== -->
+  <h2>Pagos</h2>
+  <form method="post" class="mb-3">
+    {% csrf_token %}
+    <input type="hidden" name="tipo" value="pago">
+    <select name="mes" class="form-control mb-2">
+      {% for m in meses %}
+        <option value="{{ m }}">{{ m }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="total" placeholder="Total" class="form-control mb-2">
+    <button type="submit" class="btn btn-primary">Guardar Pago</button>
+  </form>
 
-        th, td {
-            padding: 0.75rem;
-            border: 1px solid #dee2e6;
-            vertical-align: middle;
-        }
-
-        th {
-            font-weight: 600;
-            text-align: center;
-        }
-
-        td input, td select {
-            width: 100%;
-            padding: 0.4rem;
-            font-size: 0.9rem;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-        }
-
-        .numeric {
-            text-align: right;
-        }
-
-        .actions {
-            text-align: center;
-            /* Se ajusta el ancho de las acciones para la tabla grande */
-            width: 150px; 
-        }
-        
-        /* Ajuste de ancho para la columna de acciones en tablas más pequeñas */
-        .small-table-actions {
-            width: 120px; 
-        }
-
-        button {
-            margin-right: 0.5rem;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            border-radius: 0.25rem;
-        }
-
-        button:hover {
-            background-color: #0b5ed7;
-        }
-
-        a {
-            color: #dc3545;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .muted {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .small-input {
-            max-width: 100%;
-        }
-    </style>
-
-    <div class="container">
-        <h1>Cuenta Corriente - Arriendo de Camiones</h1>
-        <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
-        <p class="muted">Editar filas directamente. Cambios se envían por formulario a sus vistas correspondientes.</p>
-
-        <div class="card">
-            <h2>Estado de cuentas - Facturas</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mes</th>
-                        <th>Fecha factura</th>
-                        <th>Número factura</th>
-                        <th class="numeric">Total</th>
-                        <th>Mensaje</th>
-                        <th class="numeric">Total pagado</th>
-                        <th>Fecha pago</th>
-                        <th>Estado</th>
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for factura in invoices %}
-                    <tr>
-                        <form method="post" action="#">
-                            {% csrf_token %}
-                            <td><input class="small-input" name="mes" value="{{ factura.mes }}"></td>
-                            <td><input class="small-input" type="date" name="fecha" value="{{ factura.fecha }}"></td>
-                            <td><input class="small-input" name="numero" value="{{ factura.numero }}"></td>
-                            <td class="numeric"><input class="small-input numeric" type="number" step="0.01" name="total" value="{{ factura.total }}"></td>
-                            <td><input class="small-input" name="mensaje" value="{{ factura.mensaje }}"></td>
-                            <td class="numeric"><input class="small-input numeric" type="number" step="0.01" name="total_pagado" value="{{ factura.total_pagado }}"></td>
-                            <td><input class="small-input" type="date" name="fecha_pago" value="{{ factura.fecha_pago }}"></td>
-                            <td>
-                                <select name="estado" class="small-input">
-                                    <option value="pendiente" {% if factura.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                                    <option value="parcial" {% if factura.estado == 'parcial' %}selected{% endif %}>Parcial</option>
-                                    <option value="pagada" {% if factura.estado == 'pagada' %}selected{% endif %}>Pagada</option>
-                                </select>
-                            </td>
-                            <td class="actions">
-                                <button type="submit">Guardar</button>
-                                <a href="#" onclick="return confirm('Eliminar factura?');">Eliminar</a>
-                            </td>
-                        </form>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="9" class="muted">No hay facturas registradas.</td></tr>
-                    {% endfor %}
-
-                    <tr>
-                        <form method="post" action="#">
-                            {% csrf_token %}
-                            <td><input class="small-input" name="mes" placeholder="Ej: 2025-07"></td>
-                            <td><input class="small-input" type="date" name="fecha"></td>
-                            <td><input class="small-input" name="numero"></td>
-                            <td class="numeric"><input class="small-input numeric" type="number" step="0.01" name="total"></td>
-                            <td><input class="small-input" name="mensaje"></td>
-                            <td class="numeric"><input class="small-input numeric" type="number" step="0.01" name="total_pagado" value="0.00"></td>
-                            <td><input class="small-input" type="date" name="fecha_pago"></td>
-                            <td>
-                                <select name="estado" class="small-input">
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="parcial">Parcial</option>
-                                    <option value="pagada">Pagada</option>
-                                </select>
-                            </td>
-                            <td class="actions"><button type="submit">Agregar</button></td>
-                        </form>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="row content-row">
-            
-            <div class="col-md-6">
-                <div class="card">
-                    <h2>Proyección de ingresos</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mes</th>
-                                <th class="numeric">Total proyectado</th>
-                                <th class="actions small-table-actions">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in expected_income %}
-                            <tr>
-                                <form method="post" action="#">
-                                    {% csrf_token %}
-                                    <td><input class="small-input" name="mes" value="{{ item.mes }}"></td>
-                                    <td class="numeric"><input class="small-input numeric expected-input" type="number" step="0.01" name="total" value="{{ item.total }}" data-mes="{{ item.mes }}"></td>
-                                    <td class="actions small-table-actions">
-                                        <button type="submit">Guardar</button>
-                                        <a href="#" onclick="return confirm('Eliminar?');">Eliminar</a>
-                                    </td>
-                                </form>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="muted">No hay proyecciones.</td></tr>
-                            {% endfor %}
-
-                            <tr>
-                                <form method="post" action="#">
-                                    {% csrf_token %}
-                                    <td><input class="small-input" name="mes" placeholder="Ej: 2025-07"></td>
-                                    <td class="numeric"><input class="small-input numeric expected-input" type="number" step="0.01" name="total" value="0.00" data-mes=""></td>
-                                    <td class="actions small-table-actions"><button type="submit">Agregar</button></td>
-                                </form>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <h2>Pagos del arriendo y saldo por mes</h2>
-                    <table id="pagos-table">
-                        <thead>
-                            <tr>
-                                <th>Mes</th>
-                                <th class="numeric">Total pagado</th>
-                                <th class="numeric">Proyección</th>
-                                <th class="numeric">Falta por pagar</th>
-                                <th class="actions small-table-actions">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pago in payments %}
-                            <tr>
-                                <form method="post" action="#" class="payment-form" data-mes="{{ pago.mes }}">
-                                    {% csrf_token %}
-                                    <td><input class="small-input" name="mes" value="{{ pago.mes }}"></td>
-                                    <td class="numeric"><input class="small-input numeric payment-input" type="number" step="0.01" name="total" value="{{ pago.total }}" data-mes="{{ pago.mes }}"></td>
-                                    <td class="numeric projected-cell">
-                                        {{ expected_map|get_item:pago.mes|default:"0.00" }}
-                                    </td>
-                                    <td class="numeric remaining-cell">
-                                        {{ expected_map|get_item:pago.mes|default:"0.00"|floatformat:2 }}
-                                    </td>
-                                    <td class="actions small-table-actions">
-                                        <button type="submit">Guardar</button>
-                                        <a href="#" onclick="return confirm('Eliminar pago?');">Eliminar</a>
-                                    </td>
-                                </form>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="5" class="muted">No hay pagos registrados.</td></tr>
-                            {% endfor %}
-
-                            <tr>
-                                <form method="post" action="#" id="new-payment-form">
-                                    {% csrf_token %}
-                                    <td><input class="small-input" name="mes" placeholder="Ej: 2025-07"></td>
-                                    <td class="numeric"><input class="small-input numeric payment-input" type="number" step="0.01" name="total" value="0.00" data-mes=""></td>
-                                    <td class="numeric projected-cell">-</td>
-                                    <td class="numeric remaining-cell">-</td>
-                                    <td class="actions small-table-actions"><button type="submit">Agregar</button></td>
-                                </form>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p class="muted">Nota: "Falta por pagar" = Proyección - Pagos. Los valores actualizan en el cliente al editar.</p>
-                </div>
-            </div>
-            
-        </div> </div>
-
-    <script>
-        // ... (Tu código JavaScript actual, no es necesario pegarlo de nuevo aquí si lo tienes completo)
-    </script>
-    <script>
-        // Construir mapa de proyecciones desde contexto Django a JS
-        const expectedMap = {};
-        {% for key, val in expected_map.items %}
-        expectedMap["{{ key }}"] = parseFloat("{{ val|default:0.0 }}");
-        {% endfor %}
-
-        // Actualiza las celdas proyectadas y faltantes para cada fila de pagos
-        function updatePaymentRow(row) {
-            const mesInput = row.querySelector('input[name="mes"]');
-            const paymentInput = row.querySelector('.payment-input');
-            const projectedCell = row.querySelector('.projected-cell');
-            const remainingCell = row.querySelector('.remaining-cell');
-
-            const mes = mesInput && mesInput.value.trim();
-            const pago = parseFloat(paymentInput.value) || 0;
-            const proyectado = (mes && expectedMap[mes]) ? expectedMap[mes] : 0;
-            projectedCell.textContent = proyectado.toFixed(2);
-            const faltante = proyectado - pago;
-            remainingCell.textContent = faltante.toFixed(2);
-            // colorizar si esta saldo positivo/negativo
-            remainingCell.style.color = (faltante > 0) ? '#dc3545' : (faltante < 0 ? '#28a745' : '#212529');
-        }
-
-        // Inicializar todas las filas existentes
-        document.querySelectorAll('#pagos-table tbody tr').forEach(tr => {
-            if (tr.querySelector('.payment-input')) {
-                updatePaymentRow(tr);
-            }
-        });
-
-        // Añadir listeners para inputs de pago/mes
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('payment-input') || e.target.name === 'mes') {
-                const row = e.target.closest('tr');
-                if (row) updatePaymentRow(row);
-            }
-        });
-
-        // Cuando se actualice la tabla de proyecciones, recomputar (por ejemplo si el usuario edita en la otra tabla y recarga se actualizará desde servidor).
-        // Si quiere actualización en tiempo real sin reload se necesita AJAX para sincronizar expectedMap.
-    </script>
+  <table class="table table-bordered">
+    <thead><tr><th>#</th><th>Mes</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for p in pagos %}
+        <tr><td>{{ forloop.counter }}</td><td>{{ p.mes }}</td><td>${{ p.total|floatformat:0 }}</td></tr>
+      {% empty %}
+        <tr><td colspan="3" class="text-center">No hay pagos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 </body>
 </html>

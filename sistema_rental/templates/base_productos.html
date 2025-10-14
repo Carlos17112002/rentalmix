@@ -1,106 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Listado de Productos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .search-form {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .search-form input[type="text"] {
-            padding: 8px;
-            width: 300px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .search-form button {
-            padding: 8px 12px;
-            border: none;
-            background-color: #333;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .search-form button:hover {
-            background-color: #575757;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        thead {
-            background: #333;
-            color: #fff;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        tbody tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        tbody tr:hover {
-            background: #f1f1f1;
-        }
-        @media (max-width: 768px) {
-            table, .search-form input[type="text"] {
-                font-size: 14px;
-                width: auto;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>📦 Listado de Productos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .card {
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .acciones .btn {
+      margin: 0 4px;
+    }
+    .acciones .btn-editar {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+    .acciones .btn-eliminar {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .acciones .btn:hover {
+      opacity: 0.9;
+    }
+  </style>
 </head>
 <body>
-    <h1>Listado de Productos</h1>
-    <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
-    <div class="search-form">
-        <form method="get" action="">
-            <input type="text" name="buscar" placeholder="Buscar por nombre o código" value="{{ request.GET.buscar }}">
-            <button type="submit">Filtrar</button>
-        </form>
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold text-primary">Listado de Productos</h2>
+      <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary">← Volver al Menú</a>
     </div>
-    <table>
-        <thead>
+
+    <form method="get" action="" class="mb-4">
+      <div class="input-group">
+        <input type="text" name="buscar" class="form-control" placeholder="Buscar por nombre o código" value="{{ request.GET.buscar }}">
+        <button type="submit" class="btn btn-dark">Filtrar</button>
+      </div>
+    </form>
+
+    <div class="card p-3">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-dark text-center">
             <tr>
-                <th>Descripción</th>
-                <th>Código</th>
-                <th>Precio Costo Unitario</th>
-                <th>Fecha de Compra</th>
-                <th>Última Compra</th>
-                <th>Proveedor</th>
+              <th>Descripción</th>
+              <th>Código</th>
+              <th>Precio Costo Unitario</th>
+              <th>Fecha de Compra</th>
+              <th>Última Compra</th>
+              <th>Proveedor</th>
+              <th>Acciones</th>
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             {% for producto in productos %}
             <tr>
-                <td>{{ producto.descripcion }}</td>
-                <td>{{ producto.codigo }}</td>
-                <td>{{ producto.precio_costo_unitario }}</td>
-                <td>{{ producto.fecha_compra }}</td>
-                <td>{{ producto.ultima_compra }}</td>
-                <td>{{ producto.proveedor }}</td>
+              <td>{{ producto.descripcion }}</td>
+              <td>{{ producto.codigo }}</td>
+              <td>${{ producto.precio_costo_unitario|floatformat:0 }}</td>
+              <td>{{ producto.fecha_compra|date:"d/m/Y" }}</td>
+              <td>{{ producto.ultima_compra|date:"d/m/Y" }}</td>
+              <td>{{ producto.proveedor }}</td>
+              <td class="acciones text-center">
+                <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-editar">Editar</a>
+                <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-sm btn-eliminar" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?');">Eliminar</a>
+              </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No hay productos disponibles.</td>
+              <td colspan="7" class="text-center text-muted">No hay productos disponibles.</td>
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
