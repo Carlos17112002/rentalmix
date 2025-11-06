@@ -10,29 +10,41 @@
       background: #f4f4f4;
       margin: 0;
       padding: 40px;
-      background-image: url('{% static 'img/oa2i_1p69_180305.jpg' %}');
+      background-image: url("{% static 'img/oa2i_1p69_180305.jpg' %}");
       background-size: cover;
     }
+
     .logo {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
+
     .logo img {
-      max-height: 60px;
+      max-height: 120px;
     }
-    h1 {
-      text-align: center;
-      color: #410304;
-      margin-bottom: 30px;
+
+    .menu-principal {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 30px;
     }
+
     .menu-container {
       display: flex;
       flex-wrap: wrap;
       gap: 30px;
       justify-content: center;
+      margin-top: 50px;
     }
-    .module {
-      background: #410304;
+
+    .module, .module1, .module2 {
       color: #fff;
       text-decoration: none;
       width: 220px;
@@ -47,48 +59,89 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    .module1 {
-      background: #6b4003ff;
-      color: #fff;
-      text-decoration: none;
-      width: 220px;
-      height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+
+    .module { background: #030e88; }
+    .module:hover { background: #0000f7ff; }
+
+    .module1 { background: #6b0303; }
+    .module1:hover { background: #ff0101ff; }
+
+    .module2 { background: #5c5c5cff; }
+    .module2:hover { background: #959494ff; }
+
+    .logout-container {
+      margin-top: 50px;
       text-align: center;
-      border-radius: 10px;
-      transition: background 0.3s ease;
-      font-size: 20px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0, 38, 255, 0.1);
-    }
-    .module1:hover {
-      background: #cc6d00ff;
-    }
-    .module:hover {
-      background: #be0707;
-    }
-    .module2 {
-      background: #526819ff;
-      color: #fff;
-      text-decoration: none;
-      width: 220px;
-      height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      border-radius: 10px;
-      transition: background 0.3s ease;
-      font-size: 20px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0, 38, 255, 0.1);
-    }
-    .module2:hover {
-      background: #aacc00ff;
     }
 
+    .btn-logout {
+      background-color: #cc0000;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background-color: #a00000;
+    }
+
+    .confirm-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .confirm-dialog {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .confirm-logo {
+      max-height: 40px;
+      width: auto;
+      margin-bottom: 8px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      object-fit: contain;
+    }
+
+    .confirm-yes, .confirm-no {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .confirm-yes {
+      background-color: #030e88;
+      color: #fff;
+    }
+
+    .confirm-no {
+      background-color: #ccc;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -97,13 +150,47 @@
     <img src="{% static 'img/logo.png' %}" alt="Logo Empresa">
   </div>
 
+  <div style="text-align: center;">
+    <h1 class="menu-principal">MENÚ PRINCIPAL</h1>
 
-  <h1>MENÚ PRINCIPAL</h1>
+  </div>
 
   <div class="menu-container">
     <a class="module1" href="{% url 'menu_facturas' %}">Menú Facturas</a>
     <a class="module" href="{% url 'menu_rental' %}">Menú JD RENTAL MIX</a>
+    {% if request.user.is_superuser %}
+      <a class="module2" href="{% url 'crear_usuario' %}">Crear Usuarios</a>
+    {% endif %}
+  </div>
 
+  <div class="logout-container">
+    <button id="logout-btn" class="btn-logout">Cerrar sesión</button>
+  </div>
+
+  <div id="confirm-box" class="confirm-overlay" style="display: none;">
+    <div class="confirm-dialog">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" class="confirm-logo">
+      <h2>¿Estás seguro de cerrar sesión?</h2>
+      <div class="confirm-actions">
+        <a href="{% url 'logout' %}" class="confirm-yes">Sí, cerrar sesión</a>
+        <button onclick="closeConfirm()" class="confirm-no">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const logoutBtn = document.getElementById('logout-btn');
+    const confirmBox = document.getElementById('confirm-box');
+
+    logoutBtn.addEventListener('click', () => {
+      confirmBox.style.display = 'flex';
+    });
+
+    function closeConfirm() {
+      confirmBox.style.display = 'none';
+    }
+  </script>
 
 </body>
+</html>
 </html>

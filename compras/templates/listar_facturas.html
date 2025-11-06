@@ -1,0 +1,206 @@
+{% load static %}
+{% load formatos %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Facturas de Compra</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    .container {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .form-section {
+      margin-bottom: 40px;
+    }
+    .table th, .table td {
+      vertical-align: middle;
+      text-align: center;
+      word-break: break-word;
+      max-width: 150px;
+    }
+    .table td input[type="file"] {
+      width: 100%;
+      max-width: 140px;
+      margin: auto;
+    }
+    .btn-lg {
+      font-size: 18px;
+      padding: 10px 20px;
+    }
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .container {
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+      }
+      table {
+        font-size: 12pt;
+      }
+      h1 {
+        font-size: 18pt;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Gestión de Facturas de Compra</h1>
+
+    <!-- Botones -->
+    <div class="form-section text-end no-print">
+      <a href="{% url 'subir_libro' %}" class="btn btn-success btn-lg">Subir nuevo libro</a>
+      <a href="{% url 'menu_facturas' %}" class="btn btn-outline-secondary btn-lg">Volver</a>
+     <!-- <a href="{% url 'actualizar_montos' %}" class="btn btn-outline-primary btn-lg">Actualizar montos</a> -->
+      <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">Imprimir resultados</button>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="form-section no-print">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label for="fecha_inicio" class="form-label">Desde</label>
+          <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+        </div>
+        <div class="col-md-2">
+          <label for="fecha_fin" class="form-label">Hasta</label>
+          <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+        </div>
+        <div class="col-md-2">
+          <label for="rut" class="form-label">RUT</label>
+          <input type="text" name="rut" id="rut" class="form-control" value="{{ rut|default_if_none:'' }}">
+        </div>
+        <div class="col-md-2">
+          <label for="folio" class="form-label">Folio</label>
+          <input type="text" name="folio" id="folio" class="form-control" value="{{ folio|default_if_none:'' }}">
+        </div>
+        <div class="col-md-2">
+          <label for="estado" class="form-label">Estado</label>
+          <select name="estado" id="estado" class="form-select">
+            <option value="">Todos</option>
+            <option value="pendiente" {% if estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+            <option value="pagada" {% if estado == "pagada" %}selected{% endif %}>Pagada</option>
+          </select>
+        </div>
+        <div class="col-md-2 text-end">
+          <button type="submit" class="btn btn-outline-primary btn-lg">Filtrar</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Listado -->
+    <div class="form-section">
+      <h4>Listado de Facturas</h4>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead class="table-light">
+              <tr>
+                <th>Marcar</th>
+                <th>Folio</th>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>RUT</th>
+                <th>Monto Exento</th>
+                <th>Monto Neto</th>
+                <th>Monto IVA</th>
+                <th>Monto Total</th>
+                <th>Estado</th>
+                <th>Fecha de Pago</th>
+                <th>Comprobante</th>
+                <th>Boucher Pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in facturas %}
+                <tr>
+                  <td>
+                    {% if f.pagada %}
+                      <input type="checkbox" name="factura_id" value="{{ f.id }}" checked disabled>
+                    {% else %}
+                      <input type="checkbox" name="factura_id" value="{{ f.id }}">
+                    {% endif %}
+                  </td>
+                  <td>{{ f.folio }}</td>
+                  <td>{{ f.fecha_emision }}</td>
+                  <td>{{ f.proveedor }}</td>
+                  <td>{{ f.rut_proveedor }}</td>
+                  <td>${{ f.monto_exento|floatformat:0|formato_chileno }}</td>
+                  <td>${{ f.monto_neto|floatformat:0|formato_chileno }}</td>
+                  <td>${{ f.monto_iva|floatformat:0|formato_chileno }}</td>
+                  <td>${{ f.monto_total|floatformat:0|formato_chileno }}</td>
+                  <td>
+                    {% if f.pagada %}
+                      <span class="text-success">Pagada</span>
+                    {% else %}
+                      <span class="text-danger">Pendiente</span>
+                      <a href="{% url 'pagar_factura' f.id %}" class="btn btn-sm btn-outline-success ms-2 no-print">Ir a pagar</a>
+                    {% endif %}
+                  </td>
+                  <td>{% if f.fecha_pago %}{{ f.fecha_pago }}{% else %}—{% endif %}</td>
+                  <td><input type="file" name="comprobante_{{ f.id }}" class="form-control form-control-sm no-print"></td>
+                  <td>
+                    {% if f.boucher_pago %}
+                      <a href="{{ f.boucher_pago.url }}" target="_blank" class="btn btn-sm btn-outline-info no-print">Ver</a>
+                    {% endif %}
+                    <input type="file" name="boucher_{{ f.id }}" class="form-control form-control-sm no-print mt-1">
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="13" class="text-center text-muted">No hay facturas registradas para este período.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Desbloqueo -->
+        <div class="row mb-4 no-print">
+          <div class="col-md-6">
+            <label for="folio_desbloqueo" class="form-label">Folio de factura a desbloquear</label>
+            <input type="text" name="folio_desbloqueo" id="folio_desbloqueo" class="form-control" placeholder="Ej: 12345">
+          </div>
+          <div class="col-md-6">
+            <label for="clave_desbloqueo" class="form-label">Clave de desbloqueo</label>
+            <input type="password" name="clave_desbloqueo" id="clave_desbloqueo" class="form-control" placeholder="Ej: DESBLOQUEAR2025">
+          </div>
+        </div>
+
+        <div class="text-end no-print">
+          <button type="submit" class="btn btn-primary btn-lg">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

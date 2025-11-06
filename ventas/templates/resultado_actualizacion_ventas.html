@@ -1,0 +1,11 @@
+<h3>Actualización de ventas completada</h3>
+<p><strong>Facturas actualizadas:</strong> {{ actualizadas }}</p>
+
+{% if no_encontradas %}
+  <p><strong>Folios no encontrados:</strong></p>
+  <ul>
+    {% for folio in no_encontradas %}
+      <li>{{ folio }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

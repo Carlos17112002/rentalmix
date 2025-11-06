@@ -1,0 +1,6 @@
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <label>Archivo CSV con montos corregidos:</label>
+  <input type="file" name="archivo" class="form-control mb-3" required>
+  <button type="submit" class="btn btn-primary">Actualizar Montos</button>
+</form>

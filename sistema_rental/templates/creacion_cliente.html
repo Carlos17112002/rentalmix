@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,19 +10,35 @@
     body {
       background-color: #f8f9fa;
     }
+
     .card {
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-    .btn-volver {
-      margin-bottom: 20px;
+
+    .titulo-cliente {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 30px;
+      margin-bottom: 40px;
     }
   </style>
 </head>
 <body>
-  <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold text-primary">Ingresar Nuevo Cliente</h2>
-      <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary btn-volver">← Volver al Menú</a>
+  <div class="text-center d-flex flex-column align-items-center">
+    <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 100px; width: auto;">
+    <h1 class="titulo-cliente">🧑‍💼 Ingresar Nuevo Cliente</h1>
+  </div>
+
+  <div class="container py-4">
+    <div class="d-flex justify-content-end mb-4">
+      <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg">⬅️ Volver al Menú</a>
     </div>
 
     <div class="card p-4">

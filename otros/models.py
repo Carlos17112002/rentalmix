@@ -5,24 +5,9 @@ from django.db import models
 
 class RegistroOtro(models.Model):
     TIPO_CHOICES = [
-        ('cotizacion', 'Cotización'),
-        ('ajuste', 'Ajuste'),
-        ('nota', 'Nota interna'),
-        ('gasto', 'Gasto menor'),
-        ('otro', 'Otro'),
-        ('patente', 'Patente'),
-        ('licencia', 'Licencia'),
-        ('mantenimiento', 'Mantenimiento'),
-        ('servicio', 'Servicio'),
-        ('suscripcion', 'Suscripción'),
-        ('impuesto', 'Impuesto'),
-        ('multas', 'Multas'),
-        ('seguros', 'Seguros'),
-        ('honorarios', 'Honorarios'),
-        ('comisiones', 'Comisiones'),
-        ('publicidad', 'Publicidad'),
-        ('viajes', 'Viajes'),
-        ('capacitación', 'Capacitación'),
+        ('partes', 'Partes'),
+        ('boletas', 'Boletas'),
+        ('patentes', 'Patentes'),
         ('otros', 'Otros'),
     ]
 

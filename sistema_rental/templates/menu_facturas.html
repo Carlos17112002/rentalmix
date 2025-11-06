@@ -30,7 +30,7 @@
       justify-content: center;
     }
     .module {
-      background: #6b4003ff;
+      background: #8d0000ff;
       color: #fff;
       text-decoration: none;
       width: 220px;
@@ -46,7 +46,7 @@
       box-shadow: 0 4px 8px rgba(0, 38, 255, 0.1);
     }
     .module:hover {
-      background: #cc6d00ff;
+      background: #ee0000ff;
     }
   </style>
 </head>
@@ -60,10 +60,30 @@
   
 
   <div class="menu-container">
-    <a class="module" href="{% url 'listar_compras' %}">Compras</a>
-    <a class="module" href="{% url 'listar_ventas' %}">Ventas</a>
-    <a class="module" href="{% url 'listar_otros' %}">Otros</a>
-    <a class="module" href="https://homer.sii.cl" >Crear Factura en SII</a>
+    {% if ver_compras %}
+  <a class="module" href="{% url 'listar_facturas' %}">Compras</a>
+    {% endif %}
+
+    {% if ver_ventas %}
+      <a class="module" href="{% url 'listar_ventas' %}">Ventas</a>
+    {% endif %}
+
+    {% if ver_sueldos %}
+      <a class="module" href="{% url 'listar_sueldos' %}">Sueldos</a>
+    {% endif %}
+
+    {% if ver_f29 %}
+      <a class="module" href="{% url 'pagos_f29' %}">Ingrese a pagar F29</a>
+    {% endif %}
+
+    {% if ver_previred %}
+      <a class="module" href="{% url 'pagos_previred' %}" target="_blank">Ingrese a PreviRed</a>
+    {% endif %}
+
+    {% if ver_otros %}
+      <a class="module" href="{% url 'listar_otros' %}">Otros</a>
+    {% endif %}
+    <a class="module" href="https://homer.sii.cl" target="_blank">Crear Factura en SII</a>
     <a class="module" href="{% url 'index' %}"> Volver</a>
   </div>
 

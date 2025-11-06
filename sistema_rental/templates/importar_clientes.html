@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>📥 Importar Clientes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .container {
+      max-width: 900px;
+    }
+    table th, table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h2 class="fw-bold text-primary mb-4 text-center">Importar Clientes desde CSV</h2>
+
+    {% if preview %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="confirmar" value="1">
+        <div class="alert alert-warning">🔍 Esta es una vista previa. Si todo está correcto, haz clic en "Confirmar Importación".</div>
+        <table class="table table-bordered table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>RUT</th>
+              <th>Dirección</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in preview %}
+              <tr>
+                <td>{{ c.nombre }}</td>
+                <td>{{ c.rut }}</td>
+                <td>{{ c.direccion }}</td>
+                <td>{{ c.telefono }}</td>
+                <td>{{ c.correo }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" class="btn btn-success">✅ Confirmar Importación</button>
+          <a href="{% url 'importar_clientes' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    {% else %}
+      <form method="post" enctype="multipart/form-data" class="mb-4">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="archivo" class="form-label">Selecciona archivo CSV</label>
+          <input type="file" name="archivo" id="archivo" class="form-control" accept=".csv" required>
+        </div>
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-primary">🔍 Vista Previa</button>
+          <a href="{% url 'base_datos' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+      </form>
+    {% endif %}
+
+    {% if mensaje %}
+      <div class="alert alert-info mt-4 text-center">{{ mensaje }}</div>
+    {% endif %}
+  </div>
+</body>
+</html>

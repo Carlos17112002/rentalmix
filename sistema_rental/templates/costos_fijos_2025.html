@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
   <title>JDRentalMix</title>
   <style>
     body {
@@ -19,7 +19,7 @@
       text-align: center;
       margin-bottom: 20px;
     }
-        .logo img {
+    .logo img {
       max-height: 60px;
     }
 
@@ -35,10 +35,38 @@
       background-color: #f4f4f4;
       border: 1px solid #000;
       padding: 8px;
-  
     }
+    td {
+      border: 1px solid #000;
+      padding: 6px;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .gastos-cell {
+      white-space: pre-line;
+      text-align: left;
+    }
+
+    .gastos-titulo {
+      font-weight: bold;
+      text-align: center;
+      border: none;
+      background-color: #f4f4f4;
+      padding: 10px;
+    }
+    .vertical-only td {
+      border-top: none;
+      border-bottom: none;
+      border-left: 1px solid #000;
+      border-right: 1px solid #000;
+      padding: 6px;
+    }
+
+
   </style>
 </head>
+
 <body>
 
 
@@ -68,8 +96,70 @@
         </tr>
     </thead>
 
+  <tbody>
+    <tr><td class="bold">Facturas de venta</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Creditos Bancarios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Diferencia</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Total Credito Financiero</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Saldo Mes Anterior</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Pago De Factura De Ventas</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Devolucion De Impuesto Renta</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Ventas</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 
+    <!-- Fila GASTOS como título -->
+    <tr>
+      <td class="gastos-titulo" colspan="14">GASTOS</td>
+    </tr>
+
+    <!-- Fila de ítems bajo GASTOS con texto vertical y celdas vacías -->
+  <tr class="vertical-only">
+    <td class="gastos-cell">
+      Cia De Seguros Mafre (Camiones)
+      Compras Del Mes C/Factura
+      Cheques A Fecha
+      Seguros
+      Gastos Generales
+      Asesoria Computacional
+      Pago A Terceros
+      Pago Sii (Renta y Rectificatoria)
+      Arriendo Oficina-Taller
+      Honorarios
+      Impuestos Mensuales iva
+      Pago Imposiciones
+      Sueldos-Anticipos
+      Finiquitos
+    </td>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+  </tr>
+
+
+    <!-- Filas adicionales con 14 celdas vacías -->
+    <tr><td class="bold">Totales</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Interes Bancarios+Comisiones</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Total Intereses</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Retiro</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Total Retiros</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Creditos Bancarios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">SUB-TOTAL Prestamos</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Saldo en Caja</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="bold">Diferencia</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr>
+  <td class="bold"></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+  </tbody>
 </table>
 </body>
 </html>
-

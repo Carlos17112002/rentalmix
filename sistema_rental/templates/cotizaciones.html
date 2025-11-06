@@ -7,73 +7,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
-      padding: 30px;
-      font-size: 18px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    label {
-      font-weight: bold;
-      margin-top: 15px;
-    }
-    input, select, textarea {
-      font-size: 18px;
-    }
-    .table th, .table td {
-      vertical-align: middle;
-      text-align: center;
-    }
-    .totales {
-      font-weight: bold;
-      text-align: right;
-    }
-    .btn-lg {
-      font-size: 18px;
+
+    .titulo-cotizacion {
+      font-size: 34px; /* antes 42px */
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
       padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 30px; /* separa del logo */
     }
-    .preview {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      padding: 20px;
-      margin-top: 30px;
-    }
-    @media print {
-      .no-print {
-        display: none;
-      }
-    }
+    body { background-color: #f9f9f9; padding: 30px; font-size: 18px; }
+    h1 { text-align: center; margin-bottom: 30px; }
+    label { font-weight: bold; margin-top: 15px; }
+    input, select, textarea { font-size: 18px; }
+    .table th, .table td { vertical-align: middle; text-align: center; }
+    .totales { font-weight: bold; text-align: right; }
+    .btn-lg { font-size: 18px; padding: 10px 20px; }
+    .preview { background-color: #fff; border: 1px solid #ccc; padding: 20px; margin-top: 30px; }
+    @media print { .no-print { display: none; } }
   </style>
 </head>
 <body>
 
-  <h1>Cotización</h1>
-  <div class="mb-3">
-    <a href="{% url 'menu_rental' %}" class="btn btn-secondary btn-lg no-print">← Volver al Menú</a>
+  <div class="text-center mb-4 d-flex flex-column align-items-center">
+    <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 100px; width: auto;">
+    <h1 class="titulo-cotizacion">Cotización</h1>
   </div>
-
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'crear_producto' %}" class="btn btn-success btn-lg no-print">+ Nuevo Producto</a>
+    <a href="{% url 'listado_cotizaciones' %}" class="btn btn-warning btn-lg no-print" style="color: white;">Listado de Cotizaciones</a>
+  </div>
+  <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg no-print">⬅️ Volver al Menú</a>
+</div>
   <form class="no-print">
     <div class="row mb-3">
       <div class="col-md-6">
-        <label for="producto">Producto</label>
-        <select id="producto" class="form-select" onchange="actualizarProducto()">
-          <option value="">-- Seleccione --</option>
-          {% for producto in productos %}
-            <option 
-              data-codigo="{{ producto.codigo }}" 
-              data-precio="{{ producto.precio_costo_unitario }}">
-              {{ producto.descripcion }}
-            </option>
-          {% endfor %}
-        </select>
+          <label for="producto">Producto</label>
+          <select id="producto" class="form-select" onchange="actualizarProductoDesdeSelect()">
+  <option value="">-- Seleccione --</option>
+  {% for p in productos %}
+    <option value="{{ p.codigo }}" data-precio="{{ p.precio_costo_unitario }}" data-tipo="existente">
+      [{{ p.codigo }}] {{ p.descripcion }}
+    </option>
+  {% endfor %}
+  {% for p in productos_nuevos %}
+    <option value="{{ p.codigo }}" data-precio="{{ p.precio_costo_unitario }}" data-tipo="nuevo">
+      [{{ p.codigo }}] {{ p.descripcion }}
+    </option>
+  {% endfor %}
+</select>
       </div>
       <div class="col-md-6">
         <label for="codigo">Código</label>
-        <input type="text" id="codigo" class="form-control" readonly>
+        <input type="text" id="codigo" class="form-control" oninput="buscarPorCodigo()">
       </div>
     </div>
 
@@ -84,21 +75,21 @@
       </div>
       <div class="col-md-4">
         <label for="iva">IVA (%)</label>
-        <input type="number" id="iva" class="form-control" value="19" onchange="actualizarProducto()">
+        <input type="number" id="iva" class="form-control" value="19" onchange="actualizarCalculo()">
       </div>
       <div class="col-md-4">
         <label for="cantidad">Cantidad</label>
-        <input type="number" id="cantidad" class="form-control" value="1" min="1" onchange="actualizarProducto()">
+        <input type="number" id="cantidad" class="form-control" value="1" min="1" onchange="actualizarCalculo()">
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-4">
-        <label>Subtotal sin IVA</label>
+        <label>Neto</label>
         <input type="text" id="subtotal" class="form-control" readonly>
       </div>
       <div class="col-md-4">
-        <label>Monto de IVA</label>
+        <label>IVA</label>
         <input type="text" id="monto_iva" class="form-control" readonly>
       </div>
       <div class="col-md-4">
@@ -127,9 +118,9 @@
     </thead>
     <tbody id="detalle"></tbody>
     <tfoot>
-      <tr><td colspan="4" class="totales">Total sin IVA:</td><td colspan="4" id="total_sin_iva">$0.00</td></tr>
-      <tr><td colspan="4" class="totales">Total IVA:</td><td colspan="4" id="total_iva">$0.00</td></tr>
-      <tr><td colspan="4" class="totales">Total con IVA:</td><td colspan="4" id="total_con_iva">$0.00</td></tr>
+      <tr><td colspan="4" class="totales">Neto:</td><td colspan="4" id="total_sin_iva">$0.00</td></tr>
+      <tr><td colspan="4" class="totales">IVA:</td><td colspan="4" id="total_iva">$0.00</td></tr>
+      <tr><td colspan="4" class="totales">Total:</td><td colspan="4" id="total_con_iva">$0.00</td></tr>
     </tfoot>
   </table>
 
@@ -138,57 +129,86 @@
 
   <div class="text-end no-print mt-4">
     <button onclick="window.print()" class="btn btn-success btn-lg">Imprimir Cotización</button>
+    <button type="button" class="btn btn-warning btn-lg" onclick="guardarCotizacion()">Guardar Cotización</button>
   </div>
 
   <div class="preview">
     <h4>Vista previa rápida</h4>
-    <p><strong>RENTALMIX</strong> - Cotización rápida</p>
-    <p>Total sin IVA: <span id="preview_sin_iva">$0.00</span></p>
-    <p>Total IVA: <span id="preview_iva">$0.00</span></p>
+    <p class="d-flex align-items-center gap-2 mb-3">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 32px;">
+      <span class="mb-0">- Cotización rápida</span>
+    </p>
+    <p>Neto: <span id="preview_sin_iva">$0.00</span></p>
+    <p>IVA: <span id="preview_iva">$0.00</span></p>
     <p>Total: <span id="preview_total">$0.00</span></p>
   </div>
 
- <script>
-  function actualizarProducto() {
+  <script>
+  const productosData = {
+    {% for producto in productos %}
+      "{{ producto.codigo }}": {
+        descripcion: "{{ producto.descripcion|escapejs }}",
+        precio: {{ producto.precio_costo_unitario|floatformat:0 }}
+      },
+    {% endfor %}
+    {% for producto in productos_nuevos %}
+      "{{ producto.codigo }}": {
+        descripcion: "{{ producto.descripcion|escapejs }}",
+        precio: {{ producto.precio_costo_unitario|floatformat:0 }}
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function actualizarProductoDesdeSelect() {
     const select = document.getElementById('producto');
-    const option = select.options[select.selectedIndex];
-    const codigo = option.getAttribute('data-codigo');
-    const precio = parseFloat(option.getAttribute('data-precio')) || 0;
+    const codigo = select.value;
+    const producto = productosData[codigo];
+    if (producto) {
+      document.getElementById('codigo').value = codigo;
+      document.getElementById('precio').value = producto.precio;
+      actualizarCalculo();
+    }
+  }
+
+  function buscarPorCodigo() {
+    const codigo = document.getElementById('codigo').value.trim();
+    const producto = productosData[codigo];
+    if (producto) {
+      document.getElementById('producto').value = codigo;
+      document.getElementById('precio').value = producto.precio;
+      actualizarCalculo();
+    }
+  }
+
+  function actualizarCalculo() {
+    const precio = parseFloat(document.getElementById('precio').value) || 0;
     const cantidad = parseFloat(document.getElementById('cantidad').value) || 1;
     const iva = parseFloat(document.getElementById('iva').value) || 0;
-
     const subtotal = precio * cantidad;
     const montoIVA = subtotal * (iva / 100);
     const total = subtotal + montoIVA;
 
-    document.getElementById('codigo').value = codigo || '';
-    document.getElementById('precio').value = precio;
     document.getElementById('subtotal').value = `$${formatearCLP(subtotal)}`;
     document.getElementById('monto_iva').value = `$${formatearCLP(montoIVA)}`;
     document.getElementById('total').value = `$${formatearCLP(total)}`;
   }
 
   function agregarProducto() {
-    const select = document.getElementById('producto');
-    const producto = select.options[select.selectedIndex].text;
-    const codigo = document.getElementById('codigo').value;
-    const precio = parseFloat(document.getElementById('precio').value);
+    const codigo = document.getElementById('codigo').value.trim();
+    const producto = productosData[codigo];
     const cantidad = parseFloat(document.getElementById('cantidad').value);
     const iva = parseFloat(document.getElementById('iva').value);
-    const subtotal = precio * cantidad;
+    if (!producto || !codigo || !cantidad) return alert("Completa los datos correctamente.");
+
+    const subtotal = producto.precio * cantidad;
     const montoIVA = subtotal * (iva / 100);
     const total = subtotal + montoIVA;
 
-    if (!codigo || !precio || !cantidad || !producto || producto === "-- Seleccione --") {
-      alert("Por favor selecciona un producto válido.");
-      return;
-    }
-
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${producto}</td>
+      <td>${producto.descripcion}</td>
       <td>${codigo}</td>
-      <td>$${formatearCLP(precio)}</td>
+      <td>$${formatearCLP(producto.precio)}</td>
       <td>${cantidad}</td>
       <td>$${formatearCLP(subtotal)}</td>
       <td>$${formatearCLP(montoIVA)}</td>
@@ -199,19 +219,29 @@
     `;
     document.getElementById('detalle').appendChild(row);
     actualizarTotales();
+    limpiarCampos();
+  }
 
-    // Reset campos
-    document.getElementById('producto').selectedIndex = 0;
-    document.getElementById('codigo').value = '';
-    document.getElementById('precio').value = '';
+  function limpiarCampos() {
+    document.getElementById('producto').value = "";
+    document.getElementById('codigo').value = "";
+    document.getElementById('precio').value = "";
     document.getElementById('cantidad').value = 1;
-    document.getElementById('subtotal').value = '';
-    document.getElementById('monto_iva').value = '';
-    document.getElementById('total').value = '';
+    document.getElementById('subtotal').value = "";
+    document.getElementById('monto_iva').value = "";
+    document.getElementById('total').value = "";
   }
 
   function limpiarNumero(texto) {
     return parseFloat(texto.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+  }
+
+  function formatearCLP(valor) {
+    return valor.toLocaleString('es-CL', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
   }
 
   function actualizarTotales() {
@@ -234,22 +264,67 @@
     document.getElementById('preview_total').textContent = `$${formatearCLP(totalFinal)}`;
   }
 
-  function formatearCLP(valor) {
-    return valor.toLocaleString('es-CL', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+  function getCSRFToken() {
+    return document.cookie.split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+  }
+
+  function guardarCotizacion() {
+    const observaciones = document.getElementById('observaciones').value;
+    const productos = [];
+
+    document.querySelectorAll('#detalle tr').forEach(row => {
+      const producto = row.cells[0].textContent;
+      const codigo = row.cells[1].textContent;
+      const precio = limpiarNumero(row.cells[2].textContent);
+      const cantidad = parseFloat(row.cells[3].textContent);
+      const subtotal = limpiarNumero(row.cells[4].textContent);
+      const iva = limpiarNumero(row.cells[5].textContent);
+      const total = limpiarNumero(row.cells[6].textContent);
+
+      productos.push({ producto, codigo, precio, cantidad, subtotal, iva, total });
+    });
+
+    const cotizacion = {
+      observaciones,
+      productos,
+      neto: limpiarNumero(document.getElementById('total_sin_iva').textContent),
+      iva: limpiarNumero(document.getElementById('total_iva').textContent),
+      total: limpiarNumero(document.getElementById('total_con_iva').textContent)
+    };
+
+    fetch("{% url 'guardar_cotizacion' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+      },
+      body: JSON.stringify(cotizacion)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("Cotización guardada correctamente.");
+        window.location.href = "{% url 'listado_cotizaciones' %}";
+      } else {
+        alert("Error al guardar la cotización.");
+      }
+    })
+    .catch(error => {
+      alert("Error de conexión al guardar la cotización.");
+      console.error(error);
     });
   }
 
   window.onload = () => {
-    actualizarProducto();
-    document.getElementById('producto').addEventListener('change', actualizarProducto);
-    document.getElementById('cantidad').addEventListener('change', actualizarProducto);
-    document.getElementById('iva').addEventListener('change', actualizarProducto);
+    actualizarTotales();
+    document.getElementById('producto').addEventListener('change', actualizarProductoDesdeSelect);
+    document.getElementById('codigo').addEventListener('input', buscarPorCodigo);
+    document.getElementById('cantidad').addEventListener('change', actualizarCalculo);
+    document.getElementById('iva').addEventListener('change', actualizarCalculo);
     document.getElementById('btnAgregar').addEventListener('click', agregarProducto);
   };
 </script>
-
 </body>
 </html>

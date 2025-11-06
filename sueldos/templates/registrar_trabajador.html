@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear Trabajador</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding-top: 60px;
+    }
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .form-label {
+      font-weight: 500;
+    }
+    .btn i {
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card mx-auto" style="max-width: 600px;">
+      <div class="card-body">
+        <h2 class="card-title text-center mb-4 text-primary">🧑‍💼 Nuevo Trabajador</h2>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" required>
+          </div>
+
+
+          <div class="mb-3">
+            <label for="rut" class="form-label">RUT</label>
+            <input type="text" name="rut" id="rut" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="fecha_contrato" class="form-label">Fecha de Contrato</label>
+            <input type="date" name="fecha_contrato" id="fecha_contrato" class="form-control" required>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'listar_trabajadores' %}" class="btn btn-outline-secondary">
+              ← Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save"></i> Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

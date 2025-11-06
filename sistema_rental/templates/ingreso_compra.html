@@ -12,35 +12,80 @@
     table { background-color: #fff; }
     th, td { vertical-align: middle; }
     tfoot td { font-weight: bold; background-color: #f1f3f5; }
+
+
+    .titulo-ingreso {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 30px;
+    }
+
+    .titulo-agregar {
+      font-size: 20px;
+      font-weight: 600;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: #0d6efd;
+      display: inline-block;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="mt-4 mb-4">Ingreso de Compra</h2>
-    <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary mb-3">← Volver al Menú</a>
+    <div class="text-center mb-4 d-flex flex-column align-items-center">
+      <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 100px; width: auto;">
+      <h1 class="titulo-ingreso">📥 Ingreso de Compra</h1>
+    </div>
+    <div class="d-flex justify-content-end mb-4">
+      <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg">⬅️ Volver al Menú</a>
+    </div>
 
     <form id="compraForm" method="post">
       {% csrf_token %}
-      <div class="form-group">
-        <label>Fecha</label>
-        <input type="date" name="fecha" required class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Factura / Documento</label>
-        <input type="text" name="factura" required class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Proveedor</label>
-        <input type="text" name="proveedor" required class="form-control">
+
+      <!-- Datos de la compra -->
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label>Fecha</label>
+          <input type="date" name="fecha" required class="form-control">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Factura / Documento</label>
+          <input type="text" name="factura" required class="form-control">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Proveedor</label>
+          <input type="text" name="proveedor" required class="form-control">
+        </div>
       </div>
 
       <hr>
-      <h4 class="mt-4">Agregar producto</h4>
+      <h4 class="titulo-agregar">➕ Agregar producto</h4>
+
+      <!-- Formulario de producto -->
       <div class="form-row">
-        <div class="form-group col-md-6">
+        <div class="form-group col-md-4">
+          <label>Código</label>
+          <input type="text" id="codigo" class="form-control">
+        </div>
+        <div class="form-group col-md-8">
           <label>Descripción</label>
           <input type="text" id="descripcion" placeholder="Descripción del producto" class="form-control">
         </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group col-md-2">
           <label>Cantidad</label>
           <input type="number" id="cantidad" min="1" step="1" value="1" class="form-control small">
@@ -53,29 +98,28 @@
           <label>% IVA</label>
           <input type="number" id="iva_porcentaje" min="0" step="0.01" value="19" class="form-control small">
         </div>
-      </div>
-
-      <div class="form-row mb-3">
-        <div class="form-group col-md-4">
+        <div class="form-group col-md-2">
           <label>Neto</label>
           <input type="text" id="neto" readonly class="form-control small">
         </div>
-        <div class="form-group col-md-4">
+        <div class="form-group col-md-2">
           <label>Impuesto (IVA)</label>
           <input type="text" id="impuesto" readonly class="form-control small">
         </div>
-        <div class="form-group col-md-4">
+        <div class="form-group col-md-2">
           <label>Total línea</label>
           <input type="text" id="total_linea" readonly class="form-control small">
         </div>
       </div>
 
-      <button type="button" class="btn btn-primary mb-4" onclick="addProduct()">Agregar producto</button>
+      <button type="button" class="btn btn-primary mb-4" onclick="addProduct()">➕ Agregar producto</button>
 
+      <!-- Tabla de productos -->
       <table id="productosTable" class="table table-striped">
-        <thead>
+        <thead class="thead-light">
           <tr>
             <th>#</th>
+            <th>Código</th>
             <th>Descripción</th>
             <th>Fecha</th>
             <th>Factura</th>
@@ -92,7 +136,7 @@
         <tbody></tbody>
         <tfoot>
           <tr>
-            <th colspan="7" class="text-right">Totales</th>
+            <th colspan="8" class="text-right">Totales</th>
             <th class="text-right" id="sum_neto">0.00</th>
             <th></th>
             <th class="text-right" id="sum_impuesto">0.00</th>
@@ -104,140 +148,150 @@
 
       <div id="hiddenInputs"></div>
 
-      <div class="mt-3">
-        <button type="submit" class="btn btn-success">Guardar Compra</button>
-        <button type="reset" class="btn btn-secondary">Limpiar</button>
+      <!-- Botones finales -->
+      <div class="mt-4">
+        <button type="submit" class="btn btn-success">💾 Guardar Compra</button>
+        <button type="reset" class="btn btn-secondary">🧹 Limpiar</button>
       </div>
     </form>
   </div>
 
-  <script>
-    function fmt(n){ return Math.round(n).toLocaleString('es-ES'); }
-
-    let productos = [];
-
-    function calculateLine(){
-      const qty = Number(document.getElementById('cantidad').value) || 0;
-      const pu = Number(document.getElementById('p_unitario').value) || 0;
-      const iva_pct = Number(document.getElementById('iva_porcentaje').value) || 0;
-
-      const neto = qty * pu;
-      const impuesto = neto * (iva_pct / 100);
-      const total = neto + impuesto;
-
-      document.getElementById('neto').value = fmt(neto);
-      document.getElementById('impuesto').value = fmt(impuesto);
-      document.getElementById('total_linea').value = fmt(total);
-    }
-
-    ['cantidad','p_unitario','iva_porcentaje'].forEach(id=>{
-      document.getElementById(id).addEventListener('input', calculateLine);
-    });
-
-    calculateLine();
-
-    function updateTotals(){
-      let sumN=0, sumI=0, sumT=0;
-      productos.forEach(p => { sumN += p.neto; sumI += p.impuesto; sumT += p.total; });
-      document.getElementById('sum_neto').textContent = fmt(sumN);
-      document.getElementById('sum_impuesto').textContent = fmt(sumI);
-      document.getElementById('sum_total').textContent = fmt(sumT);
-    }
-
-    function renderTable(){
-      const tbody = document.querySelector('#productosTable tbody');
-      tbody.innerHTML = '';
-      productos.forEach((p, idx) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${idx+1}</td>
-          <td>${escapeHtml(p.descripcion)}</td>
-          <td>${escapeHtml(p.fecha)}</td>
-          <td>${escapeHtml(p.factura)}</td>
-          <td>${escapeHtml(p.proveedor)}</td>
-          <td class="text-right">${p.cantidad}</td>
-          <td class="text-right">${fmt(p.p_unitario)}</td>
-          <td class="text-right">${fmt(p.neto)}</td>
-          <td class="text-right">${fmt(p.iva_porcentaje)}</td>
-          <td class="text-right">${fmt(p.impuesto)}</td>
-          <td class="text-right">${fmt(p.total)}</td>
-          <td><button type="button" class="btn btn-danger btn-sm" onclick="removeProduct(${idx})">Eliminar</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-      updateHiddenInputs();
-      updateTotals();
-    }
-
-    function addProduct(){
-      const descripcion = document.getElementById('descripcion').value.trim();
-      const cantidad = Number(document.getElementById('cantidad').value) || 0;
-      const p_unitario = Number(document.getElementById('p_unitario').value) || 0;
-      const iva_porcentaje = Number(document.getElementById('iva_porcentaje').value) || 0;
-
-      const fechaVal = document.querySelector('input[name="fecha"]').value.trim();
-      const facturaVal = document.querySelector('input[name="factura"]').value.trim();
-      const proveedorVal = document.querySelector('input[name="proveedor"]').value.trim();
-
-      if(!descripcion){ alert('Ingrese descripción'); return; }
-      if(cantidad <= 0){ alert('Cantidad debe ser mayor a 0'); return; }
-
-      const neto = cantidad * p_unitario;
-      const impuesto = neto * (iva_porcentaje / 100);
-      const total = neto + impuesto;
-
-      productos.push({
-        descripcion, cantidad, p_unitario, iva_porcentaje,
-        neto, impuesto, total,
-        fecha: fechaVal, factura: facturaVal, proveedor: proveedorVal
-      });
-
-            document.getElementById('descripcion').value = '';
-      document.getElementById('cantidad').value = 1;
-      document.getElementById('p_unitario').value = '0.00';
-      document.getElementById('iva_porcentaje').value = '19';
-      calculateLine();
-      renderTable();
-    }
-
-    function removeProduct(index){
-      productos.splice(index, 1);
-      renderTable();
-    }
-
-    function updateHiddenInputs(){
-      const container = document.getElementById('hiddenInputs');
-      container.innerHTML = '';
-      productos.forEach((p, i) => {
-        ['descripcion','cantidad','p_unitario','iva_porcentaje','neto','impuesto','total'].forEach(key => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = `${key}_${i}`;
-          input.value = p[key];
-          container.appendChild(input);
-        });
-      });
-    }
-
-    function escapeHtml(text){
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    document.getElementById('compraForm').addEventListener('submit', function(e){
-      if(productos.length === 0){
-        e.preventDefault();
-        alert('Agregue al menos un producto antes de guardar.');
-      }
-    });
-  </script>
-
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+  <!-- Lógica de productos -->
+  <script>
+  function fmt(n) {
+    return Math.round(n).toLocaleString('es-ES');
+  }
+
+  let productos = [];
+
+  function calculateLine() {
+    const qty = Number(document.getElementById('cantidad').value) || 0;
+    const pu = Number(document.getElementById('p_unitario').value) || 0;
+    const iva_pct = Number(document.getElementById('iva_porcentaje').value) || 0;
+
+    const neto = qty * pu;
+    const impuesto = neto * (iva_pct / 100);
+    const total = neto + impuesto;
+
+    document.getElementById('neto').value = fmt(neto);
+    document.getElementById('impuesto').value = fmt(impuesto);
+    document.getElementById('total_linea').value = fmt(total);
+  }
+
+  ['cantidad', 'p_unitario', 'iva_porcentaje'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculateLine);
+  });
+
+  calculateLine();
+
+  function updateTotals() {
+    let sumN = 0, sumI = 0, sumT = 0;
+    productos.forEach(p => {
+      sumN += p.neto;
+      sumI += p.impuesto;
+      sumT += p.total;
+    });
+    document.getElementById('sum_neto').textContent = fmt(sumN);
+    document.getElementById('sum_impuesto').textContent = fmt(sumI);
+    document.getElementById('sum_total').textContent = fmt(sumT);
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector('#productosTable tbody');
+    tbody.innerHTML = '';
+    productos.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(p.codigo)}</td>
+        <td>${escapeHtml(p.descripcion)}</td>
+        <td>${escapeHtml(p.fecha)}</td>
+        <td>${escapeHtml(p.factura)}</td>
+        <td>${escapeHtml(p.proveedor)}</td>
+        <td class="text-right">${p.cantidad}</td>
+        <td class="text-right">${fmt(p.p_unitario)}</td>
+        <td class="text-right">${fmt(p.neto)}</td>
+        <td class="text-right">${fmt(p.iva_porcentaje)}</td>
+        <td class="text-right">${fmt(p.impuesto)}</td>
+        <td class="text-right">${fmt(p.total)}</td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeProduct(${idx})">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    updateHiddenInputs();
+    updateTotals();
+  }
+
+  function addProduct() {
+    const codigo = document.getElementById('codigo').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const cantidad = Number(document.getElementById('cantidad').value) || 0;
+    const p_unitario = Number(document.getElementById('p_unitario').value) || 0;
+    const iva_porcentaje = Number(document.getElementById('iva_porcentaje').value) || 0;
+    const neto = cantidad * p_unitario;
+    const impuesto = neto * (iva_porcentaje / 100);
+    const total = neto + impuesto;
+
+    if (!codigo || !descripcion || cantidad <= 0 || p_unitario < 0) {
+      alert('Por favor, complete todos los campos correctamente.');
+      return;
+    }
+
+    const fecha = document.querySelector('input[name="fecha"]').value;
+    const factura = document.querySelector('input[name="factura"]').value;
+    const proveedor = document.querySelector('input[name="proveedor"]').value;
+
+    productos.push({ codigo, descripcion, cantidad, p_unitario, iva_porcentaje, neto, impuesto, total, fecha, factura, proveedor });
+
+    renderTable();
+
+    document.getElementById('codigo').value = '';
+    document.getElementById('descripcion').value = '';
+    document.getElementById('cantidad').value = '1';
+    document.getElementById('p_unitario').value = '0.00';
+    document.getElementById('iva_porcentaje').value = '19';
+    calculateLine();
+  }
+
+  function removeProduct(index) {
+    productos.splice(index, 1);
+    renderTable();
+  }
+
+  function updateHiddenInputs() {
+    const container = document.getElementById('hiddenInputs');
+    container.innerHTML = '';
+    productos.forEach((p, i) => {
+      ['codigo', 'descripcion', 'cantidad', 'p_unitario', 'iva_porcentaje', 'neto', 'impuesto', 'total'].forEach(key => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `${key}_${i}`;
+        input.value = p[key];
+        container.appendChild(input);
+      });
+    });
+  }
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  document.getElementById('compraForm').addEventListener('submit', function (e) {
+    if (productos.length === 0) {
+      e.preventDefault();
+      alert('Agregue al menos un producto antes de guardar.');
+    }
+  });
+</script>
 </body>
 </html>

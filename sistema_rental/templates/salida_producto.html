@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Salida de Producto</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body {
+      margin: 20px;
+      background-color: #f8f9fa;
+    }
+
+    table {
+      background-color: #fff;
+    }
+
+    th, td {
+      vertical-align: middle;
+    }
+
+    .acciones form {
+      display: inline;
+    }
+
+    .cantidad-normal {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .cantidad-baja {
+      color: #ffc107;
+      font-weight: bold;
+    }
+
+    .cantidad-critica {
+      color: #dc3545;
+      font-weight: bold;
+    }
+
+    .titulo-salida {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 30px;
+      margin-bottom: 40px;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="text-center d-flex flex-column align-items-center">
+    <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 90px; width: auto;">
+    <h1 class="titulo-salida">📦 Salida de Producto</h1>
+  </div>
+
+  <div class="container">
+
+    <div class="d-flex justify-content-end mb-4 no-print">
+      <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg">⬅️ Volver al Menú</a>
+    </div>
+
+    <table class="table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th>#</th>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th class="text-right">Cantidad actual</th>
+          <th class="text-center">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for producto in productos %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ producto.codigo }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td class="text-right">
+            {% if producto.cantidad < 5 %}
+              <span class="cantidad-critica">{{ producto.cantidad }} 🛑</span>
+            {% elif producto.cantidad < 10 %}
+              <span class="cantidad-baja">{{ producto.cantidad }} 🟡</span>
+            {% else %}
+              <span class="cantidad-normal">{{ producto.cantidad }} 🟢</span>
+            {% endif %}
+          </td>
+          <td class="text-center acciones">
+            <form method="post" action="{% url 'disminuir_producto' producto.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('¿Disminuir cantidad de este producto?')">➖ Disminuir</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted">No hay productos registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

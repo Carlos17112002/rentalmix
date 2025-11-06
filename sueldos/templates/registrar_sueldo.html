@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agregar Sueldo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f9f9f9; padding: 40px; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    h1 { text-align: center; color: #003366; margin-bottom: 30px; }
+    .form-label { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Agregar Sueldo</h1>
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Empleado como select -->
+      <div class="mb-3">
+        <label for="empleado" class="form-label">Empleado</label>
+        <select name="empleado" id="empleado" class="form-select" required>
+          <option value="" disabled selected>Seleccione un empleado</option>
+          {% for trabajador in trabajadores %}
+            <option value="{{ trabajador.id }}">{{ trabajador.nombre }} {{ trabajador.apellido }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Monto -->
+      <div class="mb-3">
+        <label for="monto" class="form-label">Monto</label>
+        <input type="number" name="monto" id="monto" class="form-control" step="0.01" required>
+      </div>
+
+      <!-- Fecha de pago -->
+      <div class="mb-3">
+        <label for="fecha_pago" class="form-label">Fecha de Pago</label>
+        <input type="date" name="fecha_pago" id="fecha_pago" class="form-control" required>
+      </div>
+      
+
+      <!-- Botones -->
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'listar_sueldos' %}" class="btn btn-outline-secondary">← Volver</a>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

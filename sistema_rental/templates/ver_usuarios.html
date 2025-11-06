@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios Registrados</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      background-color: #0d6efd;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .card-body {
+      background-color: #fff;
+    }
+    .grupo-badge {
+      background-color: #e0e0e0;
+      border-radius: 12px;
+      padding: 4px 10px;
+      margin-right: 6px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body class="p-4">
+  <div class="container">
+    <h1 class="mb-4 text-center">Usuarios Registrados</h1>
+
+    {% for usuario in usuarios %}
+        <div class="card">
+            <div class="card-header">
+            {{ usuario.username }}
+            </div>
+            <div class="card-body">
+            <p><strong>Correo:</strong> {{ usuario.email|default:"(sin correo)" }}</p>
+            <p><strong>Grupos:</strong>
+                {% if usuario.groups.all %}
+                {% for grupo in usuario.groups.all %}
+                    <span class="grupo-badge">{{ grupo.name|capfirst }}</span>
+                {% empty %}
+                    <span class="text-muted">(sin grupos)</span>
+                {% endfor %}
+                {% else %}
+                <span class="text-muted">(sin grupos)</span>
+                {% endif %}
+            </p>
+            <div class="mt-3 d-flex gap-2">
+                <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-outline-primary btn-sm">✏️ Editar Permisos</a>
+                <a href="{% url 'eliminar_usuario' usuario.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este usuario?')">🗑️ Eliminar</a>
+            </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+
+    <div class="mt-4 text-center">
+      <a href="{% url 'crear_usuario' %}" class="btn btn-success">Crear Usuario</a>
+      <a href="{% url 'menu_principal' %}" class="btn btn-secondary">← Volver al Menú</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -21,9 +21,15 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include("sistema_rental.urls")),
+    path('', include("Login.urls")),
     path('compras/', include('compras.urls')),
+    path('menu/', include('sistema_rental.urls')),
     path('ventas/', include('ventas.urls')),
     path('otros/', include('otros.urls')),
+    path('sueldos/', include('sueldos.urls')),
+    path('cartola/', include('cartola.urls')),
+    path('obligaciones/', include('obligaciones.urls')),
+    path('login/', include('Login.urls')),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

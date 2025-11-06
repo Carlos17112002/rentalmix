@@ -1,4 +1,5 @@
 {% load static %}
+{% load formatos %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,107 +8,155 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
-<div class="container">
-  <h1>Cuenta Corriente Gardilcic</h1>
-  <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary mb-3">← Volver al Menú</a>
+<div class="container py-4">
+  <header class="mb-4">
+    <h1 class="display-5">Cuenta Corriente Gardilcic</h1>
+    <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary">← Volver al menú</a>
+  </header>
 
-  {% if success %}
-    <div class="alert alert-success">{{ success }}</div>
-  {% endif %}
+  <!-- ================== REGISTRAR COMPRA ================== -->
+  <section class="mt-5">
+    <h2 class="h4">Registrar Arriendo</h2>
+    <form method="post" class="mb-4">
+      {% csrf_token %}
+      <input type="hidden" name="tipo" value="compra">
+      <div class="form-row">
+        <div class="col-md-2 mb-2">
+          <select name="mes" class="form-control" required>
+            <option value="">Mes</option>
+            {% for m in meses %}
+              <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-2"><input type="date" name="fecha" class="form-control" required></div>
+        <div class="col-md-2 mb-2"><input type="text" name="factura" placeholder="N° Factura" class="form-control" required></div>
+        <div class="col-md-2 mb-2"><input type="number" name="total" placeholder="Total" class="form-control" required></div>
+        <div class="col-md-4 mb-2"><input type="text" name="mensaje" placeholder="Mensaje" class="form-control"></div>
+      </div>
+      <div class="form-row">
+        <div class="col-md-2 mb-2"><input type="number" name="pagado" placeholder="Monto pagado" class="form-control"></div>
+        <div class="col-md-2 mb-2"><input type="date" name="fecha_pago" class="form-control"></div>
+        <div class="col-md-2 mb-2">
+          <select name="estado" class="form-control">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Pagado">Pagado</option>
+            <option value="Vencido">Vencido</option>
+          </select>
+        </div>
+        <div class="col-md-2 mb-2">
+          <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+        </div>
+      </div>
+    </form>
 
-  <!-- ================== COMPRAS ================== -->
-  <h2>Compras</h2>
-  <form method="post" class="mb-3">
-    {% csrf_token %}
-    <input type="hidden" name="tipo" value="compra">
-    <select name="mes" class="form-control mb-2">
-      <option value="">Mes</option>
-      {% for m in meses %}
-        <option value="{{ m }}">{{ m }}</option>
-      {% endfor %}
-    </select>
-    <input type="date" name="fecha" class="form-control mb-2">
-    <input type="text" name="factura" placeholder="N° Factura" class="form-control mb-2">
-    <input type="number" name="total" placeholder="Total" class="form-control mb-2">
-    <input type="text" name="mensaje" placeholder="Mensaje" class="form-control mb-2">
-    <select name="pagado" class="form-control mb-2">
-      <option value="Sí">Pagado</option>
-      <option value="No">No pagado</option>
-    </select>
-    <input type="date" name="fecha_pago" class="form-control mb-2">
-    <select name="estado" class="form-control mb-2">
-      <option value="Pendiente">Pendiente</option>
-      <option value="Pagado">Pagado</option>
-      <option value="Vencido">Vencido</option>
-    </select>
-    <button type="submit" class="btn btn-primary">Guardar Compra</button>
-  </form>
+    <!-- ================== LISTADO DE COMPRAS ================== -->
+    <h3 class="h5">Listado General</h3>
+    <table class="table table-bordered table-sm">
+      <thead class="thead-light">
+        <tr>
+          <th>#</th><th>Mes</th><th>Fecha</th><th>Factura</th><th>Total</th><th>Mensaje</th>
+          <th>Pagado</th><th>Fecha de Pago</th><th>Estado</th><th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in compras %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ c.mes }}</td>
+            <td>{{ c.fecha }}</td>
+            <td>{{ c.factura }}</td>
+            <td>${{ c.total|formato_chileno }}</td>
+            <td>{{ c.mensaje }}</td>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="tipo" value="editar_compra">
+              <input type="hidden" name="compra_id" value="{{ c.id }}">
+              <td>
+                <div class="d-flex align-items-center">
+                  <input type="number" name="pagado" value="{{ c.pagado }}" class="form-control form-control-sm mr-2" style="width: 100px;">
+                  <span class="text-muted">${{ c.pagado|formato_chileno|floatformat:0 }}</span>
+                </div>
+              </td>
+              <td><input type="date" name="fecha_pago" value="{{ c.fecha_pago|date:'Y-m-d' }}" class="form-control form-control-sm"></td>
+              <td>
+                <select name="estado" class="form-control form-control-sm">
+                  <option value="Pendiente" {% if c.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                  <option value="Pagado" {% if c.estado == 'Pagado' %}selected{% endif %}>Pagado</option>
+                  <option value="Vencido" {% if c.estado == 'Vencido' %}selected{% endif %}>Vencido</option>
+                </select>
+              </td>
+              <td><button type="submit" class="btn btn-sm btn-success">Actualizar</button></td>
+            </form>
+          </tr>
+        {% empty %}
+          <tr><td colspan="10" class="text-center">No hay registros.</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="4" class="text-right">Total:</th>
+          <th colspan="6">${{ total_compras|formato_chileno }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
 
-  <table class="table table-bordered">
-    <thead><tr><th>#</th><th>Mes</th><th>Factura</th><th>Total</th></tr></thead>
+  <!-- ================== VENTAS AGRUPADAS ================== -->
+  <section class="mt-5">
+    <h2 class="h4">Ventas</h2>
+    <table class="table table-bordered table-sm">
+      <thead class="thead-light">
+        <tr><th>#</th><th>Mes</th><th>Total Ventas</th></tr>
+      </thead>
+      <tbody>
+        {% for v in ventas %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ v.mes }}</td>
+            <td>${{ v.total|formato_chileno }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3" class="text-center">No hay ventas registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="2" class="text-right">Total Ventas:</th>
+          <th>${{ total_compras|formato_chileno }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+ <!-- ================== PAGOS AGRUPADOS ================== -->
+<section class="mt-5">
+  <h2 class="h4">Pagos</h2>
+  <table class="table table-bordered table-sm">
+    <thead class="thead-light">
+      <tr><th>#</th><th>Mes</th><th>Pagado</th><th>Debe</th></tr>
+    </thead>
     <tbody>
-      {% for c in compras %}
+      {% for r in resumen_por_mes %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ c.mes }}</td>
-          <td>{{ c.factura }}</td>
-          <td>${{ c.total|floatformat:0 }}</td>
+          <td>{{ r.mes }}</td>
+          <td>${{ r.pagado|formato_chileno }}</td>
+          <td>${{ r.deuda|formato_chileno }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="4" class="text-center">No hay compras</td></tr>
+        <tr><td colspan="4" class="text-center">No hay pagos registrados.</td></tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2" class="text-right">Total Pagado:</th>
+        <th>${{ total_pagado|formato_chileno }}</th>
+        <th>${{ total_deuda|formato_chileno }}</th>
+      </tr>
+    </tfoot>
   </table>
-
-  <!-- ================== VENTAS ================== -->
-  <h2>Ventas</h2>
-  <form method="post" class="mb-3">
-    {% csrf_token %}
-    <input type="hidden" name="tipo" value="venta">
-    <select name="mes" class="form-control mb-2">
-      {% for m in meses %}
-        <option value="{{ m }}">{{ m }}</option>
-      {% endfor %}
-    </select>
-    <input type="number" name="total" placeholder="Total" class="form-control mb-2">
-    <button type="submit" class="btn btn-primary">Guardar Venta</button>
-  </form>
-
-  <table class="table table-bordered">
-    <thead><tr><th>#</th><th>Mes</th><th>Total</th></tr></thead>
-    <tbody>
-      {% for v in ventas %}
-        <tr><td>{{ forloop.counter }}</td><td>{{ v.mes }}</td><td>${{ v.total| floatformat:0 }}</td></tr>
-      {% empty %}
-        <tr><td colspan="3" class="text-center">No hay ventas</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- ================== PAGOS ================== -->
-  <h2>Pagos</h2>
-  <form method="post" class="mb-3">
-    {% csrf_token %}
-    <input type="hidden" name="tipo" value="pago">
-    <select name="mes" class="form-control mb-2">
-      {% for m in meses %}
-        <option value="{{ m }}">{{ m }}</option>
-      {% endfor %}
-    </select>
-    <input type="number" name="total" placeholder="Total" class="form-control mb-2">
-    <button type="submit" class="btn btn-primary">Guardar Pago</button>
-  </form>
-
-  <table class="table table-bordered">
-    <thead><tr><th>#</th><th>Mes</th><th>Total</th></tr></thead>
-    <tbody>
-      {% for p in pagos %}
-        <tr><td>{{ forloop.counter }}</td><td>{{ p.mes }}</td><td>${{ p.total|floatformat:0 }}</td></tr>
-      {% empty %}
-        <tr><td colspan="3" class="text-center">No hay pagos</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+</section>
 </div>
 </body>
 </html>

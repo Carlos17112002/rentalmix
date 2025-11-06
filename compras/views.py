@@ -1,110 +1,179 @@
 from django.shortcuts import render
-
-# Create your views here.
-from django.shortcuts import render
-from django.contrib import messages
-
-
-import csv
-import io
 from django.shortcuts import render, redirect
-from .models import LibroCompra
 
-from django.shortcuts import render, redirect
-from .models import LibroCompra
+from .models import FacturaCompra
+from .utils import leer_facturas_desde_archivo  # Asegúrate de tener
 
-def subir_libro_compras(request):
-    if request.method == 'POST':
-        archivo = request.FILES.get('archivo')
-        fecha = request.POST.get('fecha')
-        total = request.POST.get('total')
-        pagado = request.POST.get('pagado') == 'on'
+def subir_libro_sii(request):
+    if request.method == 'POST' and request.FILES.get('archivo'):
+        archivo = request.FILES['archivo']
+        fecha_libro = request.POST.get('fecha_libro')
 
-        libro = LibroCompra(
-            fecha=fecha,
-            total=total,
-            pagado=pagado,
-            archivo=archivo,
-            nombre_archivo=archivo.name,
-            estado='procesando'
-        )
-        libro.save()
+        facturas_actualizadas = 0
+        facturas_creadas = 0
 
-        return redirect('listar_compras')
+        for factura in leer_facturas_desde_archivo(archivo):
+            folio = factura['folio'].strip().lstrip('0')
+            existente = FacturaCompra.objects.filter(folio__iexact=folio).first()
+
+            if existente:
+                existente.monto_exento = factura['monto_exento']
+                existente.monto_neto = factura['monto_neto']
+                existente.monto_iva = factura['monto_iva']
+                existente.monto_total = factura['monto_total']
+                existente.save()
+                facturas_actualizadas += 1
+            else:
+                FacturaCompra.objects.create(
+                    folio=folio,
+                    fecha_emision=factura['fecha_emision'],
+                    proveedor=factura['proveedor'],
+                    rut_proveedor=factura['rut_proveedor'],
+                    monto_exento=factura['monto_exento'],
+                    monto_neto=factura['monto_neto'],
+                    monto_iva=factura['monto_iva'],
+                    monto_total=factura['monto_total'],
+                    pagada=False,
+                    origen_libro=fecha_libro
+                )
+                facturas_creadas += 1
+
+        print(f"Actualizadas: {facturas_actualizadas}, Nuevas: {facturas_creadas}")
+        return redirect('listar_facturas')
 
     return render(request, 'subir_libro.html')
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import LibroCompra
 
-def listar_compras(request):
-    compras = LibroCompra.objects.order_by('-fecha')
-    return render(request, 'listar_compras.html', {'compras': compras})
+from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from datetime import datetime
+from .models import FacturaCompra
 
-import csv
-import io
+def listar_facturas(request):
+    facturas = FacturaCompra.objects.all().order_by('-fecha_emision')
 
-def revisar_libro(request, libro_id):
-    libro = get_object_or_404(LibroCompra, id=libro_id)
-    encabezados = []
-    contenido = []
+    # Filtros
+    mes = request.GET.get('mes')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    rut = request.GET.get('rut_proveedor')
+    folio = request.GET.get('folio')
+    estado = request.GET.get('estado')
 
-    if libro.archivo.name.endswith('.csv'):
-        with open(libro.archivo.path, 'r', encoding='utf-8') as f:
-            reader = csv.reader(f, delimiter=';', skipinitialspace=True)
-            filas = list(reader)
-            if filas:
-                encabezados = filas[0]
-                contenido = filas[1:]
+    if mes:
+        try:
+            mes_dt = datetime.strptime(mes, '%Y-%m')
+            facturas = facturas.filter(
+                fecha_emision__year=mes_dt.year,
+                fecha_emision__month=mes_dt.month
+            )
+        except ValueError:
+            pass
 
+    if fecha_inicio and fecha_fin:
+        try:
+            inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+            fin_dt = datetime.strptime(fecha_fin, '%Y-%m-%d')
+            facturas = facturas.filter(fecha_emision__range=(inicio_dt, fin_dt))
+        except ValueError:
+            pass
+
+    if rut:
+        facturas = facturas.filter(rut_proveedor__icontains=rut)
+
+    if folio:
+        facturas = facturas.filter(folio__icontains=folio)
+
+    if estado == 'pendiente':
+        facturas = facturas.filter(pagada=False)
+    elif estado == 'pagada':
+        facturas = facturas.filter(pagada=True)
+
+    # Procesar cambios
     if request.method == 'POST':
-        nuevo_csv = [encabezados]  # mantener encabezados
-        for i in range(len(contenido)):
-            fila = []
-            for j in range(len(encabezados)):
-                key = f'celda_{i}_{j}'
-                valor = request.POST.get(key, '')
-                fila.append(valor)
-            nuevo_csv.append(fila)
+        seleccionadas = request.POST.getlist('factura_id')
+        folio_desbloqueo = request.POST.get('folio_desbloqueo', '').strip()
+        clave_desbloqueo = request.POST.get('clave_desbloqueo', '').strip()
+        clave_correcta = "DESBLOQUEAR2025"
 
-        with open(libro.archivo.path, 'w', encoding='utf-8', newline='') as f:
-            writer = csv.writer(f, delimiter=';')
-            writer.writerows(nuevo_csv)
+        for factura in facturas:
+            # Guardar comprobante si se subió
+            file_field = f'comprobante_{factura.id}'
+            if file_field in request.FILES:
+                factura.comprobante = request.FILES[file_field]
 
-        nuevo_estado = request.POST.get('estado')
-        if nuevo_estado in ['correcto', 'error']:
-            libro.estado = nuevo_estado
-        libro.save()
-        return redirect('listar_compras')
+            # Marcar como pagada o desbloquear
+            if factura.pagada:
+                if str(factura.id) not in seleccionadas and factura.folio == folio_desbloqueo and clave_desbloqueo == clave_correcta:
+                    factura.pagada = False
+                    factura.fecha_pago = None
+            else:
+                if str(factura.id) in seleccionadas:
+                    factura.pagada = True
+                    factura.fecha_pago = timezone.now().date()
 
-    return render(request, 'revisar_libro.html', {
-        'libro': libro,
-        'encabezados': encabezados,
-        'contenido': contenido
+            factura.save()
+
+        return redirect(request.get_full_path())
+
+    return render(request, 'listar_facturas.html', {
+        'facturas': facturas,
+        'mes_seleccionado': mes,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'rut': rut,
+        'folio': folio,
+        'estado': estado,
     })
 
-def eliminar_libro(request, libro_id):
-    libro = get_object_or_404(LibroCompra, id=libro_id)
-    libro.delete()
-    return redirect('listar_compras')
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from .models import FacturaCompra
 
-from django.shortcuts import get_object_or_404, redirect
-from .models import LibroCompra
+def pagar_factura(request, factura_id):
+    factura = get_object_or_404(FacturaCompra, id=factura_id)
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import LibroCompra
-
-def seleccionar_banco(request, libro_id):
-    libro = get_object_or_404(LibroCompra, id=libro_id)
-
-    if libro.estado != 'correcto':
-        return redirect('listar_compras')  # solo se puede pagar si está correcto
+    if factura.pagada:
+        return render(request, 'pagar_factura.html', {
+            'factura': factura,
+            'mensaje': 'Esta factura ya está marcada como pagada.',
+        })
 
     if request.method == 'POST':
-        banco = request.POST.get('banco')
-        if banco in ['banco_chile', 'scotiabank']:
-            libro.pagado = True
-            libro.save()
-            # Aquí podrías guardar el banco seleccionado si lo agregas al modelo
-            return redirect('listar_compras')
+        factura.pagada = True
+        factura.fecha_pago = timezone.now().date()
+        factura.save()
+        return redirect('listar_facturas')
 
-    return render(request, 'pagar_banco.html', {'libro': libro})
+    return render(request, 'pagar_factura.html', {'factura': factura})
+
+from django.shortcuts import render, redirect
+from .models import FacturaCompra
+from .utils import leer_facturas_desde_archivo  # usa la misma función que ya tienes
+
+def actualizar_montos_facturas(request):
+    if request.method == 'POST' and request.FILES.get('archivo'):
+        archivo = request.FILES['archivo']
+        actualizadas = 0
+        no_encontradas = []
+
+        for factura in leer_facturas_desde_archivo(archivo):
+            folio = factura['folio'].strip().lstrip('0')  # normaliza el folio
+            try:
+                obj = FacturaCompra.objects.get(folio__iexact=folio)
+                obj.monto_exento = factura['monto_exento']
+                obj.monto_neto = factura['monto_neto']
+                obj.monto_iva = factura['monto_iva']
+                obj.monto_total = factura['monto_total']
+                obj.save()
+                actualizadas += 1
+            except FacturaCompra.DoesNotExist:
+                no_encontradas.append(folio)
+
+        context = {
+            'actualizadas': actualizadas,
+            'no_encontradas': no_encontradas,
+        }
+        return render(request, 'resultado_actualizacion.html', context)
+
+    return render(request, 'subir_actualizacion_montos.html')

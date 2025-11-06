@@ -30,5 +30,32 @@ from django.shortcuts import render
 from .models import RegistroOtro
 
 def listar_otros(request):
-    otros = RegistroOtro.objects.order_by('-fecha')
-    return render(request, 'listar_otros.html', {'otros': otros})
+    desde = request.GET.get('desde')
+    hasta = request.GET.get('hasta')
+    otros = RegistroOtro.objects.all()
+
+    if desde and hasta:
+        otros = otros.filter(fecha__range=[desde, hasta])
+
+    return render(request, 'listar_otros.html', {
+        'otros': otros
+    })
+
+from django.shortcuts import render, get_object_or_404, redirect
+def eliminar_otro(request, id):
+    registro = get_object_or_404(RegistroOtro, id=id)
+    registro.delete()
+    return redirect('listar_otros')
+
+def editar_otro(request, id):
+    registro = get_object_or_404(RegistroOtro, id=id)
+    if request.method == 'POST':
+        registro.tipo = request.POST.get('tipo')
+        registro.descripcion = request.POST.get('descripcion')
+        registro.fecha = request.POST.get('fecha')
+        registro.monto = request.POST.get('monto')
+        if request.FILES.get('documento'):
+            registro.documento = request.FILES.get('documento')
+        registro.save()
+        return redirect('listar_otros')
+    return render(request, 'editar_otro.html', {'registro': registro})

@@ -1,133 +1,64 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Subir Libro de Compras - Rentalmix</title>
+  <title>Subir Libro de Compras</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
+      background-color: #f4f4f4;
       font-family: Arial, sans-serif;
-      margin: 40px;
-      background-color: #f9f9f9;
+      padding: 40px;
     }
     .container {
-      max-width: 800px;
-      margin: auto;
-      background: white;
+      max-width: 600px;
+      background: #fff;
       padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #ccc;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h1 {
       text-align: center;
-      color: #003366;
+      margin-bottom: 30px;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 20px;
-    }
-    input[type="file"],
-    input[type="date"],
-    input[type="number"] {
-      margin-top: 10px;
-      padding: 8px;
+    .btn-lg {
       width: 100%;
-      box-sizing: border-box;
-    }
-    .checkbox {
-      margin-top: 20px;
-    }
-    button {
-      margin-top: 30px;
-      padding: 10px 20px;
-      background-color: #003366;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #005599;
-    }
-    .mensaje {
-      margin-top: 20px;
-      color: green;
-      font-weight: bold;
-    }
-    .resumen {
-      margin-top: 40px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #e0f0ff;
+      font-size: 18px;
+      padding: 12px;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Subir Libro de Compras desde SII</h1>
+    <h1>Subir Libro de Compras SII</h1>
+
+    {% if mensaje %}
+      <div class="alert alert-info">{{ mensaje }}</div>
+    {% endif %}
 
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
-
-      <label for="archivo">Archivo del SII (XML o CSV):</label>
-      <input type="file" name="archivo" id="archivo" accept=".xml,.csv" required>
-
-      <label for="fecha">Fecha del libro:</label>
-      <input type="date" name="fecha" id="fecha" value="{{ fecha }}" required>
-
-      <label for="total">Total del libro (CLP):</label>
-      <input type="number" name="total" id="total" step="0.01" value="{{ total }}" required>
-
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" name="pagado" id="pagado" {% if pagado %}checked{% endif %}>
-          Marcar como pagado
-        </label>
+      <div class="mb-3">
+        <label for="fecha_libro" class="form-label">Fecha de carga del libro</label>
+        <input type="date" name="fecha_libro" id="fecha_libro" class="form-control" required>
       </div>
 
-      <button type="submit">Procesar Libro</button>
+      <div class="mb-3">
+        <label for="archivo" class="form-label">Archivo del libro (CSV, XML, XLSX)</label>
+        <input type="file" name="archivo" id="archivo" class="form-control" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg">Subir y procesar</button>
     </form>
 
-    {% if mensaje %}
-      <div class="mensaje">{{ mensaje }}</div>
-    {% endif %}
-
-    {% if fecha or total %}
-      <div class="resumen">
-        <h2>Datos ingresados</h2>
-        <p><strong>Fecha:</strong> {{ fecha }}</p>
-        <p><strong>Total:</strong> ${{ total }}</p>
-        <p><strong>Pagado:</strong> {{ pagado|yesno:"Sí,No" }}</p>
-      </div>
-    {% endif %}
-
-    {% if resumen %}
-      <div class="resumen">
-        <h2>Resumen del archivo CSV</h2>
-        <table>
-          {% for fila in resumen %}
-            <tr>
-              {% for celda in fila %}
-                <td>{{ celda }}</td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </table>
-      </div>
-    {% endif %}
+    <div class="mt-4 text-center">
+      <a href="{% url 'listar_facturas' %}" class="btn btn-secondary">Ver facturas cargadas</a>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

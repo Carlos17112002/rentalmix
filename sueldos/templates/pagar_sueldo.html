@@ -1,0 +1,59 @@
+{% load static %}
+{% load formatos%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmar Pago de Sueldo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding: 40px;
+      font-family: Arial, sans-serif;
+    }
+    .confirm-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h2 {
+      color: #003366;
+      margin-bottom: 20px;
+    }
+    .info {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="confirm-container">
+    <h2>Confirmar Pago de Sueldo</h2>
+    <div class="info">
+      <p><strong>Empleado:</strong> {{ sueldo.empleado }}</p>
+      <p><strong>Monto:</strong> ${{ sueldo.monto|floatformat:0|formato_chileno }}</p>
+      <p><strong>Fecha de Pago:</strong> {{ sueldo.fecha_pago|date:"d/m/Y" }}</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="btn-group">
+        <a href="{% url 'listar_sueldos' %}" class="btn btn-secondary">← Cancelar</a>
+        <button type="submit" class="btn btn-success">✅ Confirmar Pago</button>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

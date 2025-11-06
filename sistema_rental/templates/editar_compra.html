@@ -1,0 +1,77 @@
+{% load static %}
+{% load formatos %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Editar Compra</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body { margin: 40px; background-color: #f8f9fa; }
+    .container { max-width: 700px; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h2 { margin-bottom: 30px; }
+    .form-group label { font-weight: bold; }
+    .btn-group { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>✏️ Editar Compra</h2>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" name="codigo" class="form-control" value="{{ producto.codigo|default_if_none:'' }}">
+      </div>
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <input type="text" name="descripcion" class="form-control" value="{{ producto.descripcion|default_if_none:'' }}">
+      </div>
+
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" name="cantidad" class="form-control" value="{{ producto.cantidad|default_if_none:'1' }}">
+      </div>
+
+      <div class="form-group">
+        <label>Precio unitario</label>
+        <input type="number" step="0.01" name="precio_unitario" class="form-control"
+               value="{{ producto.precio_unitario|floatformat:0|stringformat:'s'|formato_chileno }}">
+      </div>
+
+      <div class="form-group">
+        <label>% IVA</label>
+        <input type="number" step="0.01" name="iva_porcentaje" class="form-control"
+               value="{{ producto.iva_porcentaje|floatformat:0|stringformat:'s'|formato_chileno }}">
+      </div>
+
+      <div class="form-group">
+        <label>Neto</label>
+        <input type="number" step="0.01" name="neto" class="form-control"
+               value="{{ producto.neto|floatformat:0|stringformat:'s'|formato_chileno }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>Impuesto</label>
+        <input type="number" step="0.01" name="impuesto" class="form-control"
+               value="{{ producto.impuesto|floatformat:0|stringformat:'s'|formato_chileno }}" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>Total</label>
+        <input type="number" step="0.01" name="total" class="form-control"
+               value="{{ producto.total|floatformat:0|stringformat:'s' |formato_chileno }}" readonly>
+      </div>
+
+      <div class="btn-group d-flex justify-content-between">
+        <a href="{% url 'consulta_compra' %}" class="btn btn-outline-secondary">← Cancelar</a>
+        <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

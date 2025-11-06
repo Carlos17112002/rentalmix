@@ -1,103 +1,137 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Base de Datos - Clientes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-        }
-        h2 {
-            text-align: center;
-        }
-        form {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        input[type="text"] {
-            padding: 8px;
-            width: 250px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            background-color: #333;
-            color: #fff;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #575757;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: auto;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-        th {
-            background-color: #ddd;
-        }
-        .acciones button {
-            margin: 0 5px;
-            background-color: #007bff;
-        }
-        .acciones button.eliminar {
-            background-color: #dc3545;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Base de Datos - Clientes</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+
+    .titulo-clientes {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 30px;
+      margin-bottom: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: auto;
+      background-color: #fff;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #ddd;
+    }
+
+    .acciones button {
+      margin: 0 5px;
+      background-color: #007bff;
+    }
+
+    .acciones button.eliminar {
+      background-color: #dc3545;
+    }
+
+    .barra-superior {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .barra-izquierda {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .barra-superior form {
+      margin: 0;
+    }
+
+    .barra-superior a {
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-    <h2>Listado de Clientes</h2>
 
-    <form method="get" action="">
-        <input type="text" name="q" placeholder="Buscar por RUT o Nombre" value="{{ request.GET.q }}">
-        <button type="submit">Buscar</button>
-    </form>
-    <a href="{% url 'menu_rental' %}"><button>← Volver al Menú</button></a>
+  <div class="text-center d-flex flex-column align-items-center">
+    <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 100px; width: auto;">
+    <h1 class="titulo-clientes">📇 Listado de Clientes</h1>
+  </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>RUT</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Correo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cliente in clientes %}
-            <tr>
-                <td>{{ cliente.nombre }}</td>
-                <td>{{ cliente.rut }}</td>
-                <td>{{ cliente.direccion }}</td>
-                <td>{{ cliente.telefono }}</td>
-                <td>{{ cliente.correo }}</td>
-                <td class="acciones">
-                    <a href="{% url 'editar_cliente' cliente.id %}">
-                        <button>Editar</button>
-                    </a>
-                    <a href="{% url 'eliminar_cliente' cliente.id %}" onclick="return confirm('¿Estás seguro de que deseas eliminar este cliente?');">
-                        <button class="eliminar">Eliminar</button>
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">No se encontraron clientes.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <div class="barra-superior">
+    <div class="barra-izquierda">
+      <form method="get" action="" class="d-flex align-items-center gap-2">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por RUT o Nombre" value="{{ request.GET.q }}">
+        <button type="submit" class="btn btn-dark">Buscar</button>
+      </form>
+
+      <a href="{% url 'importar_clientes' %}" class="btn btn-outline-primary btn-lg">📥 Importar Clientes</a>
+    </div>
+
+    <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg">⬅️ Volver al Menú</a>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>RUT</th>
+        <th>Dirección</th>
+        <th>Teléfono</th>
+        <th>Correo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cliente in clientes %}
+      <tr>
+        <td>{{ cliente.nombre }}</td>
+        <td>{{ cliente.rut }}</td>
+        <td>{{ cliente.direccion }}</td>
+        <td>{{ cliente.telefono }}</td>
+        <td>{{ cliente.correo }}</td>
+        <td class="acciones">
+          <a href="{% url 'editar_cliente' cliente.id %}">
+            <button>Editar</button>
+          </a>
+          <a href="{% url 'eliminar_cliente' cliente.id %}" onclick="return confirm('¿Estás seguro de que deseas eliminar este cliente?');">
+            <button class="eliminar">Eliminar</button>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">No se encontraron clientes.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
 </body>
 </html>
