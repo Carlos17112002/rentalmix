@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-t0unsax+2oqis82lho=sd20fl*jmkliheef^*fs^s$z@gy!oyp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['rentalmix.onrender.com', 'localhost']
+ALLOWED_HOSTS = ['rentalmix.onrender.com', 'localhost','127.0.0.1']
 
 
 # Application definition
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'cartola',
     'obligaciones',
     'Login',
+    'camiones',
     
 ]
 

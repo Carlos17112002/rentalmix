@@ -4,199 +4,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title> Orden de Compra</title>
+  <title>Orden de Compra</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-
-<form method="post">
-  {% csrf_token %}
-  <div class="text-center mb-4 d-flex flex-column align-items-center">
-    <img src="{% static 'img/logo.png' %}" alt="Logo Empresa" style="height: 80px; margin-bottom: 24px;">
-    <h1 class="titulo-orden mb-4">Orden de compra</h1>
-  </div>
-
-  <div class="no-print d-flex flex-wrap align-items-end gap-3 mb-4">
-    <div class="d-flex flex-column" style="min-width: 220px;">
-      <label class="fw-bold mb-2" style="font-size: 16px;">N° Orden de Compra</label>
-      <input type="text" name="numero" value="{{ numero_siguiente }}" class="form-control" readonly style="font-size: 16px; height: 44px;">
-    </div>
-    <a href="{% url 'listar_ordenes' %}" class="btn btn-primary" style="font-size: 16px; height: 44px;">Ver Órdenes</a>
-    <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary" style="font-size: 16px; height: 44px;">← Volver</a>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label>Fecha</label>
-      <input type="date" name="fecha" class="form-control" value="{{ today|date:'Y-m-d' }}">
-    </div>
-    <div class="col-md-8">
-      <label>Proveedor</label>
-      <input type="text" name="cliente" class="form-control" placeholder="Nombre del Proveedor">
-    </div>
-    <div class="col-md-12 mt-3 no-print">
-      <label>Cotización base</label>
-      <select id="cotizacionBase" class="form-select">
-        <option value="">-- Seleccionar cotización --</option>
-        {% for c in cotizaciones %}
-          <option value="{{ c.id }}">
-            Cotización #{{ c.id }} — {{ c.cliente.nombre }} — {{ c.fecha|date:"d/m/Y" }} — ${{ c.total_final|intcomma }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-  </div>
-
-  <table id="tablaProductos">
-    <thead>
-      <tr>
-        <th>Artículo (código)</th>
-        <th>Descripción</th>
-        <th>Cantidad</th>
-        <th>P Unitario</th>
-        <th>Total</th>
-        <th class="acciones no-print">Acción</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr id="filaEntrada" class="no-print">
-        <td><input type="text" id="codigoNuevo" readonly></td>
-        <td>
-          <select id="descripcionNuevo" class="form-select">
-            <option value="">-- Seleccionar --</option>
-            {% for p in productos %}
-              <option value="{{ p.codigo }}" data-precio="{{ p.precio_costo_unitario }}" data-tipo="existente">
-                [{{ p.codigo }}] {{ p.descripcion }}
-              </option>
-            {% endfor %}
-          </select>
-        </td>
-        <td><input type="number" id="cantidadNuevo" value="1" min="1" class="form-control"></td>
-        <td><input type="number" id="precioNuevo" step="0.01" class="form-control"></td>
-        <td id="totalNuevo">$0</td>
-        <td class="acciones no-print"></td>
-      </tr>
-    </tbody>
-    <tfoot>
-      <tr class="totales"><td colspan="4">Neto</td><td id="neto">$0</td><td></td></tr>
-      <tr class="totales"><td colspan="4">IVA (19%)</td><td id="iva">$0</td><td></td></tr>
-      <tr class="totales"><td colspan="4">Total</td><td id="total">$0</td><td></td></tr>
-    </tfoot>
-  </table>
-
-  <input type="hidden" name="neto" id="campoNeto">
-  <input type="hidden" name="iva" id="campoIva">
-  <input type="hidden" name="total" id="campoTotal">
-
-  <div class="no-print botones mt-3">
-    <button type="submit" class="btn btn-primary">Guardar Orden</button>
-    <button type="button" class="btn btn-outline-dark" onclick="window.print()">🖨️ Imprimir</button>
-  </div>
-</form>
-
-<hr class="my-1">
-
-<div class="mt-1" style="margin-bottom: 0;">
-  <p><strong>OC SEGÚN COTIZACIÓN</strong></p>
-  <p>Si usted tiene alguna pregunta sobre esta orden de compra, por favor, póngase en contacto con:</p>
-
-  <div class="mt-3 d-flex flex-column align-items-start">
-    <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 60px; margin-bottom: 10px;">
-    <div>
-      JOSE VICTORINO LASTARRIA 529 - RANCAGUA<br>
-      Cel: 09 4425 2500<br>
-      <a href="http://www.jdrentalmix.cl" target="_blank">www.jdrentalmix.cl</a> — E-Mail: <a href="mailto:info@jdrentalmix.cl">info@jdrentalmix.cl</a>
-    </div>
-  </div>
-
-  <div class="mt-3 text-end">
-    <p><strong>Firma Autorizada:</strong></p>
-    __________________________
-  </div>
-</div>
-
-<script>
-  let filaIndex = 0;
-
-  function actualizarTotales() {
-    let neto = 0;
-    const filas = Array.from(document.querySelectorAll('#tablaProductos tbody tr'));
-    filas.forEach(row => {
-      if (row.id === 'filaEntrada') return;
-      const cantidadInput = row.cells[2].querySelector('input');
-      const precioInput = row.cells[3].querySelector('input');
-      if (!cantidadInput || !precioInput) return;
-      const cantidad = parseFloat(cantidadInput.value) || 0;
-      const precio = parseFloat(precioInput.value) || 0;
-      const total = cantidad * precio;
-      row.cells[4].textContent = `$${total.toLocaleString('es-CL')}`;
-      neto += total;
-    });
-
-    const iva = neto * 0.19;
-    const totalFinal = neto + iva;
-
-    document.getElementById('neto').textContent = `$${neto.toLocaleString('es-CL')}`;
-    document.getElementById('iva').textContent = `$${Math.round(iva).toLocaleString('es-CL')}`;
-    document.getElementById('total').textContent = `$${Math.round(totalFinal).toLocaleString('es-CL')}`;
-
-    document.getElementById('campoNeto').value = Math.round(neto);
-    document.getElementById('campoIva').value = Math.round(iva);
-    document.getElementById('campoTotal').value = Math.round(totalFinal);
-  }
-
-  document.getElementById('cotizacionBase').addEventListener('change', function () {
-    const cotizacionId = this.value;
-    if (!cotizacionId) return;
-
-    fetch(`/menu/cotizacion/${cotizacionId}/detalles/`)
-      .then(res => res.json())
-      .then(data => {
-        data.detalles.forEach(d => {
-          const total = d.precio * d.cantidad;
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td><input type="text" name="codigo_${filaIndex}" value="${d.codigo}" readonly class="form-control"></td>
-            <td><input type="text" value="${d.producto}" readonly class="form-control"></td>
-            <td><input type="number" name="cantidad_${filaIndex}" value="${d.cantidad}" min="1" class="form-control" onchange="actualizarTotales()"></td>
-            <td><input type="number" name="precio_${filaIndex}" value="${d.precio}" step="0.01" class="form-control" onchange="actualizarTotales()"></td>
-            <td class="total">$${total.toLocaleString('es-CL')}</td>
-            <td class="acciones no-print">
-              <button type="button" onclick="this.closest('tr').remove(); actualizarTotales()">Eliminar</button>
-            </td>
-            <input type="hidden" name="tipo_${filaIndex}" value="existente">
-            <input type="hidden" name="id_${filaIndex}" value="${d.codigo}">
-          `;
-          document.querySelector('#tablaProductos tbody').insertBefore(row, document.getElementById('filaEntrada'));
-          filaIndex++;
-        });
-        actualizarTotales();
-      });
-  });
-  document.getElementById('descripcionNuevo').addEventListener('change', function () {
-  const option = this.options[this.selectedIndex];
-  const codigo = option.value;
-  const precio = option.getAttribute('data-precio') || '';
-  const tipo = option.getAttribute('data-tipo') || 'existente';
-
-  document.getElementById('codigoNuevo').value = codigo;
-  document.getElementById('precioNuevo').value = precio;
-
-  const cantidad = parseFloat(document.getElementById('cantidadNuevo').value) || 1;
-  const total = cantidad * parseFloat(precio || 0);
-  document.getElementById('totalNuevo').textContent = `$${total.toLocaleString('es-CL')}`;
-});
-document.getElementById('cantidadNuevo').addEventListener('input', function () {
-  const precio = parseFloat(document.getElementById('precioNuevo').value) || 0;
-  const cantidad = parseFloat(this.value) || 0;
-  const total = precio * cantidad;
-  document.getElementById('totalNuevo').textContent = `$${total.toLocaleString('es-CL')}`;
-});
-</script>
-</body>
-</html>
-<style>
+  <style>
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
@@ -249,13 +60,6 @@ document.getElementById('cantidadNuevo').addEventListener('input', function () {
         display: none !important;
         visibility: hidden !important;
       }
-      .prevent-break {
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      table, tr, td, th {
-        page-break-inside: avoid !important;
-      }
       body {
         margin: 10mm;
       }
@@ -268,3 +72,210 @@ document.getElementById('cantidadNuevo').addEventListener('input', function () {
       width: auto;
     }
   </style>
+</head>
+<body>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="text-center mb-4 d-flex flex-column align-items-center">
+    <img src="{% static 'img/logo.png' %}" alt="Logo Empresa" style="height: 80px; margin-bottom: 24px;">
+    <h1 class="titulo-orden mb-4">Orden de compra</h1>
+  </div>
+
+  <div class="no-print d-flex flex-wrap align-items-end gap-3 mb-4">
+    <div class="d-flex flex-column" style="min-width: 220px;">
+      <label class="fw-bold mb-2">N° Orden de Compra</label>
+      <input type="text" name="numero" value="{{ numero_siguiente }}" class="form-control" readonly>
+    </div>
+    <a href="{% url 'listar_ordenes' %}" class="btn btn-primary">Ver Órdenes</a>
+    <a href="{% url 'menu_rental' %}" class="btn btn-outline-secondary">← Volver</a>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label>Fecha</label>
+      <input type="date" name="fecha" class="form-control" value="{{ today|date:'Y-m-d' }}">
+    </div>
+    <div class="col-md-8">
+      <label>Proveedor</label>
+      <input type="text" name="cliente" class="form-control" placeholder="Nombre del Proveedor">
+    </div>
+    <div class="col-md-12 mt-3 no-print">
+      <label>Cotización base</label>
+      <select id="cotizacionBase" class="form-select">
+        <option value="">-- Seleccionar cotización --</option>
+        {% for c in cotizaciones %}
+          <option value="{{ c.id }}">
+            Cotización #{{ c.id }} — {{ c.cliente }} — {{ c.fecha|date:"d/m/Y" }} — ${{ c.total_final|intcomma }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+    <table id="tablaProductos">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>P Unitario</th>
+        <th>Total</th>
+        <th class="acciones no-print">Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id="filaEntrada" class="no-print">
+        <td><input type="text" id="codigoNuevo" readonly></td>
+        <td>
+          <select id="descripcionNuevo" class="form-select">
+            <option value="">-- Seleccionar --</option>
+            {% for p in productos %}
+              <option value="{{ p.codigo }}" data-precio="{{ p.precio_costo_unitario|floatformat:0 }}">
+                [{{ p.codigo }}] {{ p.descripcion }}
+              </option>
+            {% endfor %}
+          </select>
+        </td>
+        <td><input type="number" id="cantidadNuevo" value="1" min="1" class="form-control"></td>
+        <td><input type="number" id="precioNuevo" step="0.01" class="form-control"></td>
+        <td id="totalNuevo">$0</td>
+        <td class="acciones no-print">
+          <button type="button" onclick="agregarProducto()">Agregar</button>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr class="totales"><td colspan="4">Neto</td><td id="neto">$0</td><td></td></tr>
+      <tr class="totales"><td colspan="4">IVA (19%)</td><td id="iva">$0</td><td></td></tr>
+      <tr class="totales"><td colspan="4">Total</td><td id="total">$0</td><td></td></tr>
+    </tfoot>
+  </table>
+
+  <input type="hidden" name="neto" id="campoNeto">
+  <input type="hidden" name="iva" id="campoIva">
+  <input type="hidden" name="total" id="campoTotal">
+
+  <div class="no-print botones mt-3">
+    <button type="submit" class="btn btn-primary">Guardar Orden</button>
+    <button type="button" class="btn btn-outline-dark" onclick="window.print()">🖨️ Imprimir</button>
+  </div>
+</form>
+  <script>
+  let filaIndex = 0;
+
+  function actualizarTotales() {
+    let neto = 0;
+    const filas = Array.from(document.querySelectorAll('#tablaProductos tbody tr'));
+    filas.forEach(row => {
+      if (row.id === 'filaEntrada') return;
+      const cantidadInput = row.querySelector(`input[name^="cantidad_"]`);
+      const precioInput = row.querySelector(`input[name^="precio_"]`);
+      if (!cantidadInput || !precioInput) return;
+      const cantidad = parseFloat(cantidadInput.value) || 0;
+      const precio = parseFloat(precioInput.value) || 0;
+      const total = cantidad * precio;
+      row.querySelector('.total').textContent = `$${total.toLocaleString('es-CL')}`;
+      neto += total;
+    });
+
+    const iva = neto * 0.19;
+    const totalFinal = neto + iva;
+
+    document.getElementById('neto').textContent = `$${neto.toLocaleString('es-CL')}`;
+    document.getElementById('iva').textContent = `$${Math.round(iva).toLocaleString('es-CL')}`;
+    document.getElementById('total').textContent = `$${Math.round(totalFinal).toLocaleString('es-CL')}`;
+
+    document.getElementById('campoNeto').value = Math.round(neto);
+    document.getElementById('campoIva').value = Math.round(iva);
+    document.getElementById('campoTotal').value = Math.round(totalFinal);
+  }
+
+  function agregarProducto() {
+    const codigo = document.getElementById('codigoNuevo').value;
+    const descripcion = document.getElementById('descripcionNuevo').selectedOptions[0].text;
+    const cantidad = parseFloat(document.getElementById('cantidadNuevo').value) || 1;
+    const precio = parseFloat(document.getElementById('precioNuevo').value) || 0;
+    const total = cantidad * precio;
+
+    if (!codigo || !descripcion || precio <= 0) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><input type="text" name="codigo_${filaIndex}" value="${codigo}" readonly class="form-control"></td>
+      <td><input type="text" name="descripcion_${filaIndex}" value="${descripcion}" readonly class="form-control"></td>
+      <td><input type="number" name="cantidad_${filaIndex}" value="${cantidad}" min="1" class="form-control" onchange="actualizarTotales()"></td>
+      <td><input type="number" name="precio_${filaIndex}" value="${precio}" step="0.01" class="form-control" onchange="actualizarTotales()"></td>
+      <td class="total">$${total.toLocaleString('es-CL')}</td>
+      <td class="acciones no-print">
+        <button type="button" onclick="this.closest('tr').remove(); actualizarTotales()">Eliminar</button>
+      </td>
+    `;
+    document.querySelector('#tablaProductos tbody').insertBefore(row, document.getElementById('filaEntrada'));
+    filaIndex++;
+    actualizarTotales();
+
+    document.getElementById('descripcionNuevo').value = '';
+    document.getElementById('codigoNuevo').value = '';
+    document.getElementById('cantidadNuevo').value = 1;
+    document.getElementById('precioNuevo').value = '';
+    document.getElementById('totalNuevo').textContent = '$0';
+  }
+
+  document.getElementById('cotizacionBase').addEventListener('change', function () {
+    const cotizacionId = this.value;
+    if (!cotizacionId) return;
+
+    fetch(`/menu/cotizacion/${cotizacionId}/detalles_json/`)
+      .then(res => {
+        if (!res.ok) throw new Error('No se pudo cargar la cotización');
+        return res.json();
+      })
+      .then(data => {
+        const tbody = document.querySelector('#tablaProductos tbody');
+        const entrada = document.getElementById('filaEntrada');
+
+        data.detalles.forEach(d => {
+          const total = d.precio * d.cantidad;
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><input type="text" name="codigo_${filaIndex}" value="${d.codigo}" readonly class="form-control"></td>
+            <td><input type="text" name="descripcion_${filaIndex}" value="${d.producto}" readonly class="form-control"></td>
+            <td><input type="number" name="cantidad_${filaIndex}" value="${d.cantidad}" min="1" class="form-control" onchange="actualizarTotales()"></td>
+            <td><input type="number" name="precio_${filaIndex}" value="${d.precio}" step="0.01" class="form-control" onchange="actualizarTotales()"></td>
+            <td class="total">$${total.toLocaleString('es-CL')}</td>
+            <td class="acciones no-print">
+              <button type="button" onclick="this.closest('tr').remove(); actualizarTotales()">Eliminar</button>
+            </td>
+          `;
+          tbody.insertBefore(row, entrada);
+          filaIndex++;
+        });
+        actualizarTotales();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('No se pudo cargar la cotización.');
+      });
+  });
+
+  document.getElementById('descripcionNuevo').addEventListener('change', function () {
+    const option = this.options[this.selectedIndex];
+    const codigo = option.value;
+    const precio = option.getAttribute('data-precio') || '';
+    document.getElementById('codigoNuevo').value = codigo;
+    document.getElementById('precioNuevo').value = precio;
+
+    const cantidad = parseFloat(document.getElementById('cantidadNuevo').value) || 1;
+    const total = cantidad * parseFloat(precio || 0);
+    document.getElementById('totalNuevo').textContent = `$${total.toLocaleString('es-CL')}`;
+  });
+
+  document.getElementById('cantidadNuevo').addEventListener('input', function () {
+    const precio = parseFloat(document.getElementById('precioNuevo').value) || 0;
+    const cantidad = parseFloat(this.value) || 0;
+    const total = precio * cantidad;
+    document.getElementById('totalNuevo').textContent = `$${total.toLocaleString('es-CL')}`;
+  });
+</script>
+</body>
+</html>

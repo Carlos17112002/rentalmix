@@ -8,6 +8,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+
+
+
+    .titulo-facturas {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      margin-bottom: 40px;
+    }
     body {
       background-color: #f4f4f4;
       font-family: Arial, sans-serif;
@@ -66,53 +82,59 @@
         margin-bottom: 10px;
       }
     }
+
+    .table td.monto {
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Gestión de Facturas de Compra</h1>
+    <div class="text-center d-flex flex-column align-items-center">
+      <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 100px; width: auto; margin-bottom: 20px;">
+      <h1 class="titulo-facturas">📑 Gestión de Facturas de Compra</h1>
+    </div>
 
     <!-- Botones -->
-    <div class="form-section text-end no-print">
-      <a href="{% url 'subir_libro' %}" class="btn btn-success btn-lg">Subir nuevo libro</a>
-      <a href="{% url 'menu_facturas' %}" class="btn btn-outline-secondary btn-lg">Volver</a>
-     <!-- <a href="{% url 'actualizar_montos' %}" class="btn btn-outline-primary btn-lg">Actualizar montos</a> -->
-      <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">Imprimir resultados</button>
+    <div class="form-section text-start no-print">
+      <a href="{% url 'subir_libro' %}" class="btn btn-success btn-sm me-2">📤 Subir libro</a>
+      <button type="button" class="btn btn-outline-dark btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+      <a href="{% url 'menu_facturas' %}" class="btn btn-outline-secondary btn-sm me-2">⬅️ Volver</a>
     </div>
 
     <!-- Filtros -->
     <form method="get" class="form-section no-print">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-2">
-          <label for="fecha_inicio" class="form-label">Desde</label>
-          <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
-        </div>
-        <div class="col-md-2">
-          <label for="fecha_fin" class="form-label">Hasta</label>
-          <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ fecha_fin }}">
-        </div>
-        <div class="col-md-2">
-          <label for="rut" class="form-label">RUT</label>
-          <input type="text" name="rut" id="rut" class="form-control" value="{{ rut|default_if_none:'' }}">
-        </div>
-        <div class="col-md-2">
-          <label for="folio" class="form-label">Folio</label>
-          <input type="text" name="folio" id="folio" class="form-control" value="{{ folio|default_if_none:'' }}">
-        </div>
-        <div class="col-md-2">
-          <label for="estado" class="form-label">Estado</label>
-          <select name="estado" id="estado" class="form-select">
-            <option value="">Todos</option>
-            <option value="pendiente" {% if estado == "pendiente" %}selected{% endif %}>Pendiente</option>
-            <option value="pagada" {% if estado == "pagada" %}selected{% endif %}>Pagada</option>
-          </select>
-        </div>
-        <div class="col-md-2 text-end">
-          <button type="submit" class="btn btn-outline-primary btn-lg">Filtrar</button>
-        </div>
-      </div>
-    </form>
+  <div class="row g-2 align-items-end">
+    <div class="col-md-2">
+      <label for="fecha_inicio" class="form-label">Desde</label>
+      <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control form-control-sm" value="{{ fecha_inicio }}">
+    </div>
+    <div class="col-md-2">
+      <label for="fecha_fin" class="form-label">Hasta</label>
+      <input type="date" name="fecha_fin" id="fecha_fin" class="form-control form-control-sm" value="{{ fecha_fin }}">
+    </div>
+    <div class="col-md-2">
+      <label for="rut" class="form-label">RUT</label>
+      <input type="text" name="rut" id="rut" class="form-control form-control-sm" value="{{ rut|default_if_none:'' }}">
+    </div>
+    <div class="col-md-2">
+      <label for="folio" class="form-label">Folio</label>
+      <input type="text" name="folio" id="folio" class="form-control form-control-sm" value="{{ folio|default_if_none:'' }}">
+    </div>
+    <div class="col-md-2">
+      <label for="estado" class="form-label">Estado</label>
+      <select name="estado" id="estado" class="form-select form-select-sm">
+        <option value="">Todos</option>
+        <option value="pendiente" {% if estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+        <option value="pagada" {% if estado == "pagada" %}selected{% endif %}>Pagada</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-outline-primary btn-sm w-100">🔍 Filtrar</button>
+    </div>
+  </div>
+</form>
 
     <!-- Listado -->
     <div class="form-section">

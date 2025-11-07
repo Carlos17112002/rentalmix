@@ -37,13 +37,11 @@ urlpatterns = [
     path('listado_cotizaciones', views.listado_cotizaciones, name='listado_cotizaciones'),
     path('detalle_orden/<int:orden_id>/', views.detalle_orden, name='detalle_orden'),
     path('salida_producto/', views.salida_producto, name='salida_producto'),
-    path('disminuir_producto/<int:producto_id>/', views.disminuir_producto, name='disminuir_producto'),
+    path('producto/disminuir/<int:id>/', views.disminuir_producto, name='disminuir_producto'),
     path('cotizacion/<int:cotizacion_id>/detalles/', views.detalles_cotizacion, name='detalles_cotizacion'),
     path('crear_usuario/', views.crear_usuario, name='crear_usuario'),
     path('ver_usuarios/', views.ver_usuarios, name='ver_usuarios'),
     path('usuarios/editar/<int:user_id>/', views.editar_usuario, name='editar_usuario'),
     path('usuarios/eliminar/<int:user_id>/', views.eliminar_usuario, name='eliminar_usuario'),
-    
-
-    
+    path('cotizacion/<int:cotizacion_id>/detalles_json/', views.cotizacion_detalles_json, name='cotizacion_detalles_json'),
 ]

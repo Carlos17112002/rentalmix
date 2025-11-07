@@ -22,21 +22,29 @@
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #003366;
+    .titulo-otros {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      margin-bottom: 40px;
     }
     .table th, .table td {
       vertical-align: middle;
       text-align: left;
     }
-    .btn-lg {
-      font-size: 18px;
-      padding: 10px 20px;
-    }
     .acciones form {
       display: inline;
+    }
+    .botones-otros a,
+    .botones-otros button {
+      margin-right: 10px;
     }
     @media print {
       body {
@@ -55,9 +63,11 @@
       table {
         font-size: 12pt;
       }
-      h1 {
+      .titulo-otros {
         font-size: 18pt;
         margin-bottom: 10px;
+        border: none;
+        box-shadow: none;
       }
     }
   </style>
@@ -65,13 +75,16 @@
 <body>
 
   <div class="container">
-    <h1>Registros - Otros</h1>
+    <div class="text-center d-flex flex-column align-items-center">
+      <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 100px; width: auto; margin-bottom: 20px;">
+      <h1 class="titulo-otros">🗂️ Registros - Otros</h1>
+    </div>
 
     <!-- Botones -->
-    <div class="d-flex justify-content-end gap-3 mb-4 no-print">
-      <a href="{% url 'registrar_otro' %}" class="btn btn-success btn-lg">Agregar Registro</a>
-      <a href="{% url 'menu_facturas' %}" class="btn btn-outline-secondary btn-lg">← Volver</a>
-      <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">Imprimir resultados</button>
+    <div class="botones-otros mb-4 text-start no-print">
+      <a href="{% url 'registrar_otro' %}" class="btn btn-success btn-sm">➕ Agregar Registro</a>
+      <a href="{% url 'menu_facturas' %}" class="btn btn-outline-secondary btn-sm">⬅️ Volver</a>
+      <button type="button" class="btn btn-outline-dark btn-sm" onclick="window.print()">🖨️ Imprimir resultados</button>
     </div>
 
     <!-- Filtro por rango de fechas -->
@@ -85,8 +98,8 @@
           <label for="hasta" class="form-label">Hasta</label>
           <input type="date" name="hasta" id="hasta" class="form-control" value="{{ request.GET.hasta }}">
         </div>
-        <div class="col-md-3 text-end">
-          <button type="submit" class="btn btn-outline-primary btn-lg">Filtrar</button>
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-outline-primary w-100">🔍 Filtrar</button>
         </div>
       </div>
     </form>

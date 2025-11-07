@@ -17,13 +17,21 @@ class Cliente(models.Model):
 # models.py
 from django.db import models
 
+from django.db import models
+
 class Producto(models.Model):
     descripcion = models.CharField(max_length=200)
     codigo = models.CharField(max_length=50, unique=True)
     precio_costo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
+    neto = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     fecha_compra = models.DateField(null=True, blank=True)
     ultima_compra = models.DateField(null=True, blank=True)
     proveedor = models.CharField(max_length=100)
+    cantidad = models.PositiveIntegerField(default=1)
+    factura = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return f"{self.descripcion} ({self.codigo})"

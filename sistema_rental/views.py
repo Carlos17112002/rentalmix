@@ -253,11 +253,14 @@ from django.shortcuts import render, redirect
 from .models import Producto, ProductoNuevo, OrdenCompra, DetalleOrden, Cotizacion
 from datetime import datetime, date
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import Producto, Cotizacion, DetalleCotizacion, OrdenCompra, DetalleOrden
+from datetime import datetime, date
+
 def orden_compra(request):
     productos = Producto.objects.all()
-    productos_nuevos = ProductoNuevo.objects.all()
     cotizaciones = Cotizacion.objects.select_related('cliente').order_by('-fecha')[:10]
-
     ultimo = OrdenCompra.objects.order_by('-numero').first()
     siguiente_numero = (ultimo.numero + 1) if ultimo else 1
 
@@ -268,27 +271,10 @@ def orden_compra(request):
         iva = int(request.POST.get('iva', 0))
         total = int(request.POST.get('total', 0))
 
-        if not fecha_str:
-            return render(request, 'orden_compra.html', {
-                'productos': productos,
-                'productos_nuevos': productos_nuevos,
-                'cotizaciones': cotizaciones,
-                'numero_siguiente': f"{siguiente_numero:05d}",
-                'error': 'Debes ingresar una fecha válida.',
-                'today': date.today()
-            })
-
         try:
             fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
         except ValueError:
-            return render(request, 'orden_compra.html', {
-                'productos': productos,
-                'productos_nuevos': productos_nuevos,
-                'cotizaciones': cotizaciones,
-                'numero_siguiente': f"{siguiente_numero:05d}",
-                'error': 'La fecha ingresada no tiene el formato correcto.',
-                'today': date.today()
-            })
+            fecha = date.today()
 
         orden = OrdenCompra.objects.create(
             numero=siguiente_numero,
@@ -300,23 +286,16 @@ def orden_compra(request):
         )
 
         for i in range(0, 100):
-            tipo = request.POST.get(f'tipo_{i}')
-            codigo = request.POST.get(f'id_{i}')
+            codigo = request.POST.get(f'codigo_{i}')
+            descripcion = request.POST.get(f'descripcion_{i}')
             cantidad = request.POST.get(f'cantidad_{i}')
             precio = request.POST.get(f'precio_{i}')
-
-            if codigo and cantidad and precio:
+            if codigo and descripcion and cantidad and precio:
                 try:
-                    if tipo == 'existente':
-                        producto = Producto.objects.get(codigo=codigo)
-                    elif tipo == 'nuevo':
-                        producto = ProductoNuevo.objects.get(codigo=codigo)
-                    else:
-                        continue
-
                     DetalleOrden.objects.create(
                         orden=orden,
-                        producto=producto,
+                        codigo=codigo,
+                        descripcion=descripcion,
                         cantidad=int(cantidad),
                         precio_unitario=int(precio),
                         total=int(cantidad) * int(precio)
@@ -329,7 +308,6 @@ def orden_compra(request):
 
     return render(request, 'orden_compra.html', {
         'productos': productos,
-        'productos_nuevos': productos_nuevos,
         'cotizaciones': cotizaciones,
         'numero_siguiente': f"{siguiente_numero:05d}",
         'today': date.today()
@@ -380,19 +358,32 @@ def eliminar_cliente(request, id):
 
     return render(request, 'eliminar_cliente.html', {'cliente': cliente})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Producto
+
 def editar_producto(request, id):
-    producto = Producto.objects.get(id=id)
+    producto = get_object_or_404(Producto, id=id)
+
     if request.method == 'POST':
-        producto.descripcion = request.POST.get('descripcion')
-        producto.codigo = request.POST.get('codigo')
-        producto.precio_costo_unitario = request.POST.get('precio_costo_unitario')
         producto.fecha_compra = request.POST.get('fecha_compra')
-        producto.ultima_compra = request.POST.get('ultima_compra') or None
         producto.proveedor = request.POST.get('proveedor')
+        producto.descripcion = request.POST.get('descripcion')
+        producto.codigo = request.POST.get('codigo')  # si quieres permitir edición
+        producto.factura = request.POST.get('factura')  # solo si agregaste el campo
+
+        producto.cantidad = int(request.POST.get('cantidad') or 0)
+        producto.precio_costo_unitario = float(request.POST.get('precio_costo_unitario') or 0)
+        producto.iva_porcentaje = float(request.POST.get('iva_porcentaje') or 19)
+
+        producto.neto = producto.cantidad * producto.precio_costo_unitario
+        producto.impuesto = producto.neto * (producto.iva_porcentaje / 100)
+        producto.total = producto.neto + producto.impuesto
+
         producto.save()
-        return redirect('listar_productos')  # Asegúrate de tener esta URL definida
+        return redirect('listar_productos')
 
     return render(request, 'editar_producto.html', {'producto': producto})
+
 
 def eliminar_producto(request, id):
     producto = Producto.objects.get(id=id)
@@ -876,27 +867,39 @@ def guardar_cotizacion(request):
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from .models import ProductoCompra, Producto  # Ajustá según tus modelos reales
+from .models import ProductoCompra, Producto  # Asegurate que los modelos estén bien nombrados
+
 def salida_producto(request):
     productos_nuevos = ProductoCompra.objects.all()
     productos_inventario = Producto.objects.all()
-    productos = list(productos_nuevos) + list(productos_inventario)
 
-    # Forzar cantidad = 1 para todos al cargar
-    for producto in productos:
-        producto.cantidad = 1
+    # Asignamos origen a cada producto
+    for p in productos_nuevos:
+        p.origen = 'compra'
+    for p in productos_inventario:
+        p.origen = 'inventario'
+
+    productos = list(productos_nuevos) + list(productos_inventario)
 
     return render(request, 'salida_producto.html', {'productos': productos})
 
 
 @require_POST
-def disminuir_producto(request, producto_id):
-    producto = get_object_or_404(ProductoCompra, id=producto_id)
+def disminuir_producto(request, id):
+    origen = request.POST.get('origen')
+
+    if origen == 'compra':
+        producto = get_object_or_404(ProductoCompra, id=id)
+    else:
+        producto = get_object_or_404(Producto, id=id)
+
     if producto.cantidad > 0:
         producto.cantidad -= 1
         producto.save()
+
     return redirect('salida_producto')
 
+    
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import ProductoNuevo
@@ -942,15 +945,19 @@ def crear_producto(request):
 from django.http import JsonResponse
 from .models import DetalleCotizacion
 
-def detalles_cotizacion(request, cotizacion_id):
+def cotizacion_detalles_json(request, cotizacion_id):
     detalles = DetalleCotizacion.objects.filter(cotizacion_id=cotizacion_id)
-    data = [{
-        'producto': d.producto,
-        'codigo': d.codigo,
-        'precio': d.precio_unitario,
-        'cantidad': d.cantidad
-    } for d in detalles]
-    return JsonResponse({'detalles': data})
+    data = {
+        'detalles': [
+            {
+                'codigo': d.codigo,
+                'producto': d.producto,
+                'cantidad': d.cantidad,
+                'precio': d.precio_unitario
+            } for d in detalles
+        ]
+    }
+    return JsonResponse(data)
 
 
 from django.contrib.auth.models import User, Group

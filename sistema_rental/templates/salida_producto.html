@@ -90,7 +90,9 @@
           <td>{{ producto.codigo }}</td>
           <td>{{ producto.descripcion }}</td>
           <td class="text-right">
-            {% if producto.cantidad < 5 %}
+            {% if producto.cantidad == 0 %}
+              <span class="cantidad-critica">0 🛑</span>
+            {% elif producto.cantidad < 5 %}
               <span class="cantidad-critica">{{ producto.cantidad }} 🛑</span>
             {% elif producto.cantidad < 10 %}
               <span class="cantidad-baja">{{ producto.cantidad }} 🟡</span>
@@ -99,10 +101,17 @@
             {% endif %}
           </td>
           <td class="text-center acciones">
-            <form method="post" action="{% url 'disminuir_producto' producto.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('¿Disminuir cantidad de este producto?')">➖ Disminuir</button>
-            </form>
+            {% if producto.cantidad > 0 %}
+              <form method="POST" action="{% url 'disminuir_producto' producto.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="origen" value="{{ producto.origen }}">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de disminuir este producto?')">
+                  ➖ Disminuir
+                </button>
+              </form>
+            {% else %}
+              <button class="btn btn-sm btn-secondary" disabled>🔒 Sin stock</button>
+            {% endif %}
           </td>
         </tr>
         {% empty %}

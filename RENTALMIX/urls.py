@@ -30,6 +30,7 @@ urlpatterns = [
     path('cartola/', include('cartola.urls')),
     path('obligaciones/', include('obligaciones.urls')),
     path('login/', include('Login.urls')),
+    path('camiones', include('camiones.urls')),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
