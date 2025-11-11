@@ -4,28 +4,32 @@ from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404
 from .models import Camion
 
-from django.db.models import Sum
-from .models import Camion, EstadoPagoCamion
+from django.shortcuts import render, get_object_or_404
+from .models import Camion, Contrato
 
 def dashboard_camiones(request, camion_id=None):
     camiones = Camion.objects.all().order_by('patente')
-    camion = Camion.objects.filter(id=camion_id).first() if camion_id else None
+    camion = get_object_or_404(Camion, id=camion_id) if camion_id else None
 
-    resumen = []
-    for c in camiones:
-        total_pagado = EstadoPagoCamion.objects.filter(camion=c).aggregate(total=Sum('total_a_pagar'))['total'] or 0
-        resumen.append({
-            'camion': c,
-            'total_pagado': total_pagado
-        })
+    # Contratos del camión seleccionado
+    contratos = Contrato.objects.filter(camion=camion).order_by('-fecha_inicio') if camion else []
 
-    estados = EstadoPagoCamion.objects.filter(camion=camion).order_by('-fecha_emision') if camion else []
+    # Resumen general de contratos si no hay camión seleccionado
+    resumen_contratos = []
+    if not camion:
+        for contrato in Contrato.objects.select_related('camion').order_by('-fecha_inicio'):
+            resumen_contratos.append({
+                'contrato': contrato,
+                'camion': contrato.camion,
+                'dias': contrato.dias_arriendo,
+                'total': contrato.total_arriendo
+            })
 
     return render(request, 'dashboard_camiones.html', {
         'camiones': camiones,
         'camion': camion,
-        'estados': estados,
-        'resumen': resumen
+        'contratos': contratos,
+        'resumen_contratos': resumen_contratos
     })
 
 from django.shortcuts import render, redirect
@@ -108,3 +112,22 @@ def detalle_contrato(request, contrato_id):
     return render(request, 'detalle_contrato.html', {
         'contrato': contrato
     })
+
+def editar_contrato(request, contrato_id):
+    contrato = get_object_or_404(Contrato, id=contrato_id)
+    if request.method == 'POST':
+        contrato.nombre = request.POST.get('nombre')
+        contrato.fecha_inicio = request.POST.get('fecha_inicio')
+        contrato.fecha_termino = request.POST.get('fecha_termino')
+        contrato.valor_dia = int(request.POST.get('valor_dia'))
+        contrato.save()
+        return redirect('detalle_contrato', contrato_id=contrato.id)
+    return render(request, 'editar_contratos.html', {
+        'contrato': contrato
+    })
+
+def eliminar_contrato(request, contrato_id):
+    contrato = get_object_or_404(Contrato, id=contrato_id)
+    camion_id = contrato.camion.id
+    contrato.delete()
+    return redirect('camion_detalle', camion_id=camion_id)

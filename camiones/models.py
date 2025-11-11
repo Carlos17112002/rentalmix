@@ -75,7 +75,7 @@ class Contrato(models.Model):
     fecha_inicio = models.DateField()
     fecha_termino = models.DateField()
     valor_dia = models.PositiveIntegerField(help_text="Valor diario del arriendo en CLP")
-
+    numero_local = models.PositiveIntegerField(null=True, blank=True)
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 

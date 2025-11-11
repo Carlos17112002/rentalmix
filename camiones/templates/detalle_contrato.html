@@ -14,11 +14,11 @@
 </head>
 <body>
   <div class="container">
-    <a href="{% url 'camion_detalle' contrato.camion.id %}" class="btn btn-secondary mb-4">← Volver al camión</a>
+    <a href="{% url 'dashboard_camiones' contrato.camion.id %}" class="btn btn-secondary mb-4">← Volver al camión</a>
 
     <div class="card">
       <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">Contrato #{{ contrato.id }} — {{ contrato.nombre }}</h4>
+        <h4 class="mb-0">Contrato #{{ contrato.numero_local }} — {{ contrato.nombre }}</h4>
       </div>
       <div class="card-body">
         <p><strong>Camión:</strong> [{{ contrato.camion.patente }}] {{ contrato.camion.marca }} {{ contrato.camion.modelo }}</p>
@@ -29,10 +29,6 @@
         <hr>
         <p class="valor text-success">Total del Arriendo: ${{ contrato.total_arriendo|intcomma }}</p>
       </div>
-    </div>
-
-    <div class="text-end">
-      <a href="{% url 'crear_contrato' contrato.camion.id %}" class="btn btn-outline-primary">➕ Crear otro contrato</a>
     </div>
   </div>
 </body>

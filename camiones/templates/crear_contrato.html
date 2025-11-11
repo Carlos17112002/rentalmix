@@ -14,7 +14,7 @@
 </head>
 <body>
   <div class="container">
-    <a href="{% url 'dashboard_camiones' %}" class="btn btn-secondary mb-4">← Volver</a>
+    <a href="{% url 'dashboard_camiones' camion.id %}" class="btn btn-secondary mb-4">← Volver</a>
     <h2 class="mb-4">Crear Nuevo Contrato de Arriendo</h2>
 
     <form method="post">
