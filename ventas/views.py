@@ -46,6 +46,8 @@ def subir_libro_ventas(request):
     return render(request, 'crear_venta.html')
 
 from django.utils import timezone
+from django.db.models import Sum
+
 
 def listar_ventas(request):
     ventas = FacturaVenta.objects.all().order_by('-fecha_emision')
@@ -102,6 +104,8 @@ def listar_ventas(request):
             venta.save()
 
         return redirect(request.get_full_path())
+    total_filtrado = ventas.aggregate(total=Sum('monto_total'))['total'] or 0
+
 
     return render(request, 'listar_ventas.html', {
         'ventas': ventas,
@@ -110,6 +114,7 @@ def listar_ventas(request):
         'rut': rut,
         'folio': folio,
         'estado': estado,
+        'total_filtrado': total_filtrado,
     })
 # views.py
 from django.shortcuts import get_object_or_404, redirect

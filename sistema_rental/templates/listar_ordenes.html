@@ -22,17 +22,36 @@
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      text-align: center;
+    .logo {
+      display: block;
+      margin: 0 auto 20px auto;
+      max-height: 80px;
+    }
+    .titulo-cotizacion {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+    }
+    .acciones {
+      display: flex;
+      gap: 10px;
       margin-bottom: 30px;
+    }
+    .acciones a,
+    .acciones button {
+      font-size: 14px;
+      padding: 6px 14px;
     }
     .table th, .table td {
       vertical-align: middle;
       text-align: center;
-    }
-    .btn-lg {
-      font-size: 18px;
-      padding: 10px 20px;
     }
     .table-sm th, .table-sm td {
       font-size: 14px;
@@ -61,8 +80,10 @@
         font-size: 12pt;
         page-break-inside: avoid;
       }
-      h1 {
+      .titulo-cotizacion {
         font-size: 18pt;
+        border: none;
+        box-shadow: none;
         margin-bottom: 10px;
       }
     }
@@ -71,12 +92,19 @@
 <body>
 
 <div class="container">
-  <h1>Órdenes de Compra Registradas</h1>
+  <!-- Logo centrado -->
+  <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo">
 
-  <div class="text-end mb-4 no-print">
-    <a href="{% url 'orden_compra' %}" class="btn btn-success btn-lg">Crear nueva orden</a>
-    <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary btn-lg">Volver</a>
-    <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">Imprimir listado</button>
+  <!-- Título con estilo cotización -->
+  <div class="text-center">
+    <div class="titulo-cotizacion">Órdenes de Compra Registradas</div>
+  </div>
+
+  <!-- Botones alineados a la izquierda -->
+  <div class="acciones no-print">
+    <a href="{% url 'orden_compra' %}" class="btn btn-success">Crear nueva orden</a>
+    <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary">Volver</a>
+    <button type="button" class="btn btn-outline-dark" onclick="window.print()">Imprimir listado</button>
   </div>
 
   <table class="table table-bordered table-striped">
@@ -113,7 +141,7 @@
             <table class="table table-sm table-bordered mb-4">
               <thead class="table-light">
                 <tr>
-                  <th>Producto</th>
+                  <th>Descripción</th>
                   <th>Código</th>
                   <th>Cantidad</th>
                   <th>Precio Unitario</th>
@@ -123,10 +151,26 @@
               <tbody>
                 {% for detalle in orden.detalles.all %}
                   <tr>
-                    <td>{{ detalle.producto.descripcion }}</td>
-                    <td>{{ detalle.producto.codigo }}</td>
+                    <td>
+                      {% if detalle.producto %}
+                        {{ detalle.producto.descripcion }}
+                      {% elif detalle.producto_nuevo %}
+                        {{ detalle.producto_nuevo.descripcion }}
+                      {% else %}
+                        <span class="text-muted">Sin descripción</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if detalle.producto %}
+                        {{ detalle.producto.codigo }}
+                      {% elif detalle.producto_nuevo %}
+                        {{ detalle.producto_nuevo.codigo }}
+                      {% else %}
+                        <span class="text-muted">Sin código</span>
+                      {% endif %}
+                    </td>
                     <td>{{ detalle.cantidad|floatformat:0 }}</td>
-                    <td>${{ detalle.precio_unitario|floatformat:0|formato_chileno}}</td>
+                    <td>${{ detalle.precio_unitario|floatformat:0|formato_chileno }}</td>
                     <td>${{ detalle.total|floatformat:0|formato_chileno }}</td>
                   </tr>
                 {% empty %}

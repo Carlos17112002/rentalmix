@@ -14,17 +14,31 @@
       background-color: #fff;
       color: #000;
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo img {
-      max-height: 50px;
-    }
-    h1 {
+    .logo-centro {
       text-align: center;
-      margin: 20px 0;
+      margin-bottom: 32px; /* Separación del título */
+    }
+    .logo-centro img {
+      max-height: 80px;
+    }
+    .titulo-detalle {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: 0 auto 20px auto;
+      text-align: center;
+    }
+    .botones-secundarios {
+      margin-bottom: 20px;
+    }
+    .datos-orden {
+      margin-bottom: 20px;
     }
     table {
       width: 100%;
@@ -43,6 +57,9 @@
       font-weight: bold;
       text-align: right;
     }
+    .logo-contacto {
+      max-height: 40px;
+    }
     @media print {
       .no-print {
         display: none !important;
@@ -52,24 +69,30 @@
 </head>
 <body>
 
-<div class="no-print mb-4">
-  <a href="{% url 'listar_ordenes' %}" class="btn btn-outline-secondary btn-lg">← Volver al listado</a>
-  <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">🖨️ Imprimir</button>
+<!-- Logo centrado -->
+<div class="logo-centro">
+  <img src="{% static 'img/logo.png' %}" alt="Logo Empresa">
 </div>
 
-<div class="header">
-  <div>
-    <p><strong>N° Orden de Compra:</strong> {{ orden.numero }}</p>
-    <p><strong>Fecha:</strong> {{ orden.fecha }}</p>
-    <p><strong>Cliente:</strong> {{ orden.cliente }}</p>
-  </div>
-  <div class="logo">
-    <img src="{% static 'img/logo.png' %}" alt="Logo Empresa">
-  </div>
+<!-- Título con estilo cotización -->
+<div class="text-center">
+  <div class="titulo-detalle">Orden de compra</div>
 </div>
 
-<h1>Orden de compra</h1>
+<!-- Botones debajo del título -->
+<div class="botones-secundarios no-print">
+  <a href="{% url 'listar_ordenes' %}" class="btn btn-outline-secondary btn-sm">← Volver al listado</a>
+  <button type="button" class="btn btn-outline-dark btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+</div>
 
+<!-- Datos de la orden -->
+<div class="datos-orden">
+  <p><strong>N° Orden de Compra:</strong> {{ orden.numero }}</p>
+  <p><strong>Fecha:</strong> {{ orden.fecha }}</p>
+  <p><strong>Cliente:</strong> {{ orden.cliente }}</p>
+</div>
+
+<!-- Tabla de productos -->
 <table>
   <thead>
     <tr>
@@ -104,15 +127,18 @@
 
 <hr class="my-5">
 
+<!-- Información de contacto -->
 <div class="mt-4">
   <p><strong>OC SEGÚN COTIZACIÓN {{ orden.numero }}</strong></p>
   <p>Si usted tiene alguna pregunta sobre esta orden de compra, por favor, póngase en contacto con:</p>
 
   <div class="mt-3">
-    <strong>COMERCIALIZADORA JD RENTAL MIX SPA</strong><br>
+    <!-- Reemplazo de texto por logo -->
+    <img src="{% static 'img/logo.png' %}" alt="Logo Empresa" class="logo-contacto"><br>
     JOSE VICTORINO LASTARRIA 529 - RANCAGUA<br>
-    Cel: 09 4425 2500<br>
-    <a href="http://www.jdrentalmix.cl" target="_blank">www.jdrentalmix.cl</a> — E-Mail: <a href="mailto:info@jdrentalmix.cl">info@jdrentalmix.cl</a>
+    Cel: 09 44252500
+    Web: www.jdrentalmix.cl 
+    Correo electrónico: <a href="info@jdrentalmix.cl">info@jdrentalmix.cl</a>
   </div>
 
   <div class="mt-5 text-end">

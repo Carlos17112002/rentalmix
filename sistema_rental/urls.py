@@ -44,4 +44,5 @@ urlpatterns = [
     path('usuarios/editar/<int:user_id>/', views.editar_usuario, name='editar_usuario'),
     path('usuarios/eliminar/<int:user_id>/', views.eliminar_usuario, name='eliminar_usuario'),
     path('cotizacion/<int:cotizacion_id>/detalles_json/', views.cotizacion_detalles_json, name='cotizacion_detalles_json'),
+    path('ajax/buscar-productos/', views.buscar_productos, name='buscar_productos'),
 ]

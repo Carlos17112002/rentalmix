@@ -124,6 +124,29 @@ def cotizaciones(request):
         'productos_nuevos': productos_nuevos
     })
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from .models import Producto, ProductoNuevo
+
+@require_GET
+def buscar_productos(request):
+    q = request.GET.get('q', '').strip().lower()
+
+    productos_existentes = Producto.objects.filter(descripcion__icontains=q)
+    productos_nuevos = ProductoNuevo.objects.filter(descripcion__icontains=q)
+
+    resultados = list(productos_existentes[:10]) + list(productos_nuevos[:10])  # máximo 10 en total
+
+    data = [
+        {
+            'codigo': p.codigo,
+            'descripcion': p.descripcion,
+            'precio': p.precio_costo_unitario,
+            'tipo': 'existente' if isinstance(p, Producto) else 'nuevo'
+        }
+        for p in resultados
+    ]
+    return JsonResponse(data, safe=False)
 
 from django.shortcuts import render, redirect
 
@@ -249,14 +272,9 @@ def consulta_compra(request):
         'query': query,
     })
 
-from django.shortcuts import render, redirect
-from .models import Producto, ProductoNuevo, OrdenCompra, DetalleOrden, Cotizacion
 from datetime import datetime, date
-
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from .models import Producto, Cotizacion, DetalleCotizacion, OrdenCompra, DetalleOrden
-from datetime import datetime, date
+from .models import Producto, Cotizacion, OrdenCompra, DetalleOrden, ProductoNuevo
 
 def orden_compra(request):
     productos = Producto.objects.all()
@@ -267,14 +285,18 @@ def orden_compra(request):
     if request.method == 'POST':
         cliente = request.POST.get('cliente', '').strip()
         fecha_str = request.POST.get('fecha', '').strip()
-        neto = int(request.POST.get('neto', 0))
-        iva = int(request.POST.get('iva', 0))
-        total = int(request.POST.get('total', 0))
 
         try:
             fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
         except ValueError:
             fecha = date.today()
+
+        try:
+            neto = int(request.POST.get('neto', 0))
+            iva = int(request.POST.get('iva', 0))
+            total = int(request.POST.get('total', 0))
+        except ValueError:
+            neto, iva, total = 0, 0, 0
 
         orden = OrdenCompra.objects.create(
             numero=siguiente_numero,
@@ -286,23 +308,42 @@ def orden_compra(request):
         )
 
         for i in range(0, 100):
-            codigo = request.POST.get(f'codigo_{i}')
-            descripcion = request.POST.get(f'descripcion_{i}')
-            cantidad = request.POST.get(f'cantidad_{i}')
-            precio = request.POST.get(f'precio_{i}')
-            if codigo and descripcion and cantidad and precio:
+            codigo = request.POST.get(f'codigo_{i}', '').strip()
+            descripcion = request.POST.get(f'descripcion_{i}', '').strip()
+            cantidad_raw = request.POST.get(f'cantidad_{i}', '').strip()
+            precio_raw = request.POST.get(f'precio_{i}', '').strip()
+
+            if codigo and cantidad_raw and precio_raw:
                 try:
-                    DetalleOrden.objects.create(
-                        orden=orden,
-                        codigo=codigo,
-                        descripcion=descripcion,
-                        cantidad=int(cantidad),
-                        precio_unitario=int(precio),
-                        total=int(cantidad) * int(precio)
-                    )
+                    cantidad = float(cantidad_raw)
+                    precio = float(precio_raw)
+
+                    producto = Producto.objects.filter(codigo=codigo).first()
+
+                    if producto:
+                        DetalleOrden.objects.create(
+                            orden=orden,
+                            producto=producto,
+                            cantidad=cantidad,
+                            precio_unitario=precio,
+                            total=cantidad * precio
+                        )
+                    elif descripcion:
+                        producto_nuevo = ProductoNuevo.objects.create(
+                            codigo=codigo,
+                            descripcion=descripcion
+                        )
+                        DetalleOrden.objects.create(
+                            orden=orden,
+                            producto_nuevo=producto_nuevo,
+                            cantidad=cantidad,
+                            precio_unitario=precio,
+                            total=cantidad * precio
+                        )
+                    else:
+                        print(f"Producto con código {codigo} ignorado: sin descripción válida.")
                 except Exception as e:
                     print(f"Error al guardar producto {codigo}: {e}")
-                    continue
 
         return redirect('listar_ordenes')
 

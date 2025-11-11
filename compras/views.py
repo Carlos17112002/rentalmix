@@ -45,8 +45,8 @@ def subir_libro_sii(request):
 
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
 from datetime import datetime
+from django.db.models import Sum
 from .models import FacturaCompra
 
 def listar_facturas(request):
@@ -56,7 +56,7 @@ def listar_facturas(request):
     mes = request.GET.get('mes')
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
-    rut = request.GET.get('rut_proveedor')
+    rut = request.GET.get('rut')
     folio = request.GET.get('folio')
     estado = request.GET.get('estado')
 
@@ -89,6 +89,9 @@ def listar_facturas(request):
     elif estado == 'pagada':
         facturas = facturas.filter(pagada=True)
 
+    # Total filtrado
+    total_filtrado = facturas.aggregate(total=Sum('monto_total'))['total'] or 0
+
     # Procesar cambios
     if request.method == 'POST':
         seleccionadas = request.POST.getlist('factura_id')
@@ -97,12 +100,10 @@ def listar_facturas(request):
         clave_correcta = "DESBLOQUEAR2025"
 
         for factura in facturas:
-            # Guardar comprobante si se subió
             file_field = f'comprobante_{factura.id}'
             if file_field in request.FILES:
                 factura.comprobante = request.FILES[file_field]
 
-            # Marcar como pagada o desbloquear
             if factura.pagada:
                 if str(factura.id) not in seleccionadas and factura.folio == folio_desbloqueo and clave_desbloqueo == clave_correcta:
                     factura.pagada = False
@@ -124,6 +125,7 @@ def listar_facturas(request):
         'rut': rut,
         'folio': folio,
         'estado': estado,
+        'total_filtrado': total_filtrado,
     })
 
 from django.shortcuts import render, redirect, get_object_or_404

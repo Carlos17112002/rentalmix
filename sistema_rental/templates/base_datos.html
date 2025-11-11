@@ -46,6 +46,10 @@
     .acciones button {
       margin: 0 5px;
       background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
     }
 
     .acciones button.eliminar {
@@ -75,6 +79,15 @@
     .barra-superior a {
       text-decoration: none;
     }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      .acciones {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -94,7 +107,10 @@
       <a href="{% url 'importar_clientes' %}" class="btn btn-outline-primary btn-lg">📥 Importar Clientes</a>
     </div>
 
-    <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg">⬅️ Volver al Menú</a>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-outline-secondary btn-lg no-print">🖨️ Imprimir listado</button>
+      <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark btn-lg">⬅️ Volver al Menú</a>
+    </div>
   </div>
 
   <table>
@@ -105,7 +121,7 @@
         <th>Dirección</th>
         <th>Teléfono</th>
         <th>Correo</th>
-        <th>Acciones</th>
+        <th class="no-print">Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -116,7 +132,7 @@
         <td>{{ cliente.direccion }}</td>
         <td>{{ cliente.telefono }}</td>
         <td>{{ cliente.correo }}</td>
-        <td class="acciones">
+        <td class="acciones no-print">
           <a href="{% url 'editar_cliente' cliente.id %}">
             <button>Editar</button>
           </a>

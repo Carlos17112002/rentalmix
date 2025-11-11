@@ -154,12 +154,33 @@
   <input type="hidden" name="neto" id="campoNeto">
   <input type="hidden" name="iva" id="campoIva">
   <input type="hidden" name="total" id="campoTotal">
+  <input type="hidden" name="id_producto" id="id_producto">
+  <input type="hidden" id="productos_agregados" value="0">
 
   <div class="no-print botones mt-3">
     <button type="submit" class="btn btn-primary">Guardar Orden</button>
     <button type="button" class="btn btn-outline-dark" onclick="window.print()">🖨️ Imprimir</button>
   </div>
 </form>
+
+<div class="mt-4">
+  <p><strong>OC SEGÚN COTIZACIÓN {{ orden.numero }}</strong></p>
+  <p>Si usted tiene alguna pregunta sobre esta orden de compra, por favor, póngase en contacto con:</p>
+
+  <div class="mt-3">
+      <!-- Reemplazo de texto por logo -->
+      <img src="{% static 'img/logo.png' %}" alt="Logo Empresa" class="logo-contacto"><br>
+      JOSE VICTORINO LASTARRIA 529 - RANCAGUA<br>
+      Cel: 09 44252500<br>
+      Web: <a href="https://www.jdrentalmix.cl"> www.jdrentalmix.cl</a><br>
+      Correo electrónico: <a href="info@jdrentalmix.cl">info@jdrentalmix.cl</a>
+    </div>
+
+    <div class="mt-5 text-end">
+      <p><strong>Firma Autorizada:</strong></p>
+      <p>__________________________</p>
+    </div>
+  </div>
   <script>
   let filaIndex = 0;
 
@@ -192,7 +213,8 @@
 
   function agregarProducto() {
     const codigo = document.getElementById('codigoNuevo').value;
-    const descripcion = document.getElementById('descripcionNuevo').selectedOptions[0].text;
+    const descripcionSelect = document.getElementById('descripcionNuevo');
+    const descripcion = descripcionSelect.selectedOptions[0]?.text || '';
     const cantidad = parseFloat(document.getElementById('cantidadNuevo').value) || 1;
     const precio = parseFloat(document.getElementById('precioNuevo').value) || 0;
     const total = cantidad * precio;
@@ -214,7 +236,12 @@
     filaIndex++;
     actualizarTotales();
 
-    document.getElementById('descripcionNuevo').value = '';
+    // ✅ Aumentar contador de productos agregados
+    const contador = document.getElementById('productos_agregados');
+    contador.value = parseInt(contador.value) + 1;
+
+    // Limpiar campos de entrada
+    descripcionSelect.value = '';
     document.getElementById('codigoNuevo').value = '';
     document.getElementById('cantidadNuevo').value = 1;
     document.getElementById('precioNuevo').value = '';
@@ -276,6 +303,24 @@
     const total = precio * cantidad;
     document.getElementById('totalNuevo').textContent = `$${total.toLocaleString('es-CL')}`;
   });
+
+
+
+  document.getElementById('descripcionNuevo').addEventListener('change', function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const codigo = selectedOption.value;
+    document.getElementById('id_producto').value = codigo;
+  });
+
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const productos = parseInt(document.getElementById('productos_agregados').value);
+    if (productos === 0) {
+      e.preventDefault();
+      alert("Debes agregar al menos un producto antes de guardar la orden.");
+    }
+  });
+
+
 </script>
 </body>
 </html>

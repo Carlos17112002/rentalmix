@@ -188,6 +188,15 @@
             </tr>
           {% endfor %}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="7" class="text-end fw-bold">Total:</td>
+            <td class="fw-bold">
+              ${{ total_filtrado|floatformat:0|formato_chileno }}
+            </td>
+            <td colspan="5" class="no-print"></td>
+          </tr>
+        </tfoot>
       </table>
 
       <!-- Desbloqueo -->

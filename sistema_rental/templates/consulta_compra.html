@@ -41,11 +41,14 @@
       color: #0d6efd;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       margin-top: 30px;
-      margin-bottom: 40px; /* espacio extra debajo del título */
+      margin-bottom: 20px;
     }
 
     @media print {
       .no-print {
+        display: none !important;
+      }
+      .acciones {
         display: none !important;
       }
     }
@@ -56,6 +59,7 @@
   <div class="text-center d-flex flex-column align-items-center">
     <img src="{% static 'img/logo.png' %}" alt="Logo JD Rental Mix" style="height: 110px; width: auto;">
     <h1 class="titulo-listado">📦 Listado de Productos Comprados</h1>
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print mt-2">🖨️ Imprimir</button>
   </div>
 
   <div class="container">
@@ -75,11 +79,12 @@
           <th>#</th>
           <th>Descripción</th>
           <th>Código</th>
+          <th>Fecha Compra</th>
           <th>Proveedor</th>
           <th class="text-right">Precio Unitario</th>
           <th class="text-right">Cantidad</th>
           <th class="text-right">Total</th>
-          <th class="text-center">Acciones</th>
+          <th class="text-center no-print">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -88,11 +93,12 @@
           <td>{{ forloop.counter }}</td>
           <td>{{ producto.descripcion }}</td>
           <td>{{ producto.codigo }}</td>
+          <td>{{ producto.fecha|date:"d/m/Y" }}</td>
           <td>{{ producto.compra.proveedor }}</td>
           <td class="text-right">${{ producto.precio_unitario|floatformat:0|formato_chileno }}</td>
           <td class="text-right">{{ producto.cantidad }}</td>
           <td class="text-right">${{ producto.total|floatformat:0|formato_chileno }}</td>
-          <td class="text-center acciones">
+          <td class="text-center acciones no-print">
             <a href="{% url 'editar_compra' producto.id %}">✏️ Editar</a>
             <form method="post" action="{% url 'eliminar_producto' producto.id %}">
               {% csrf_token %}

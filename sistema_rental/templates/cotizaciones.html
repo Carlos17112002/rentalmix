@@ -46,21 +46,10 @@
 </div>
   <form class="no-print">
     <div class="row mb-3">
-      <div class="col-md-6">
-          <label for="producto">Producto</label>
-          <select id="producto" class="form-select" onchange="actualizarProductoDesdeSelect()">
-  <option value="">-- Seleccione --</option>
-  {% for p in productos %}
-    <option value="{{ p.codigo }}" data-precio="{{ p.precio_costo_unitario }}" data-tipo="existente">
-      [{{ p.codigo }}] {{ p.descripcion }}
-    </option>
-  {% endfor %}
-  {% for p in productos_nuevos %}
-    <option value="{{ p.codigo }}" data-precio="{{ p.precio_costo_unitario }}" data-tipo="nuevo">
-      [{{ p.codigo }}] {{ p.descripcion }}
-    </option>
-  {% endfor %}
-</select>
+      <div class="col-md-6 position-relative">
+        <label for="producto">Producto</label>
+        <input type="text" id="producto" class="form-control" placeholder="Escribe para buscar producto..." autocomplete="off">
+        <ul id="sugerencias" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
       </div>
       <div class="col-md-6">
         <label for="codigo">Código</label>
@@ -144,6 +133,7 @@
   </div>
 
   <script>
+    let productoSeleccionado = null;
   const productosData = {
     {% for producto in productos %}
       "{{ producto.codigo }}": {
@@ -194,43 +184,48 @@
   }
 
   function agregarProducto() {
-    const codigo = document.getElementById('codigo').value.trim();
-    const producto = productosData[codigo];
-    const cantidad = parseFloat(document.getElementById('cantidad').value);
-    const iva = parseFloat(document.getElementById('iva').value);
-    if (!producto || !codigo || !cantidad) return alert("Completa los datos correctamente.");
+  const codigo = document.getElementById('codigo').value.trim();
+  const cantidad = parseFloat(document.getElementById('cantidad').value);
+  const iva = parseFloat(document.getElementById('iva').value);
+  const producto = productoSeleccionado;
 
-    const subtotal = producto.precio * cantidad;
-    const montoIVA = subtotal * (iva / 100);
-    const total = subtotal + montoIVA;
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${producto.descripcion}</td>
-      <td>${codigo}</td>
-      <td>$${formatearCLP(producto.precio)}</td>
-      <td>${cantidad}</td>
-      <td>$${formatearCLP(subtotal)}</td>
-      <td>$${formatearCLP(montoIVA)}</td>
-      <td>$${formatearCLP(total)}</td>
-      <td class="no-print">
-        <button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); actualizarTotales()">Eliminar</button>
-      </td>
-    `;
-    document.getElementById('detalle').appendChild(row);
-    actualizarTotales();
-    limpiarCampos();
+  if (!producto || !codigo || !cantidad) {
+    alert("Completa los datos correctamente.");
+    return;
   }
+
+  const subtotal = producto.precio * cantidad;
+  const montoIVA = subtotal * (iva / 100);
+  const total = subtotal + montoIVA;
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${producto.descripcion}</td>
+    <td>${codigo}</td>
+    <td>$${formatearCLP(producto.precio)}</td>
+    <td>${cantidad}</td>
+    <td>$${formatearCLP(subtotal)}</td>
+    <td>$${formatearCLP(montoIVA)}</td>
+    <td>$${formatearCLP(total)}</td>
+    <td class="no-print">
+      <button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); actualizarTotales()">Eliminar</button>
+    </td>
+  `;
+  document.getElementById('detalle').appendChild(row);
+  actualizarTotales();
+  limpiarCampos();
+}
 
   function limpiarCampos() {
-    document.getElementById('producto').value = "";
-    document.getElementById('codigo').value = "";
-    document.getElementById('precio').value = "";
-    document.getElementById('cantidad').value = 1;
-    document.getElementById('subtotal').value = "";
-    document.getElementById('monto_iva').value = "";
-    document.getElementById('total').value = "";
-  }
+  productoSeleccionado = null;
+  document.getElementById('producto').value = "";
+  document.getElementById('codigo').value = "";
+  document.getElementById('precio').value = "";
+  document.getElementById('cantidad').value = 1;
+  document.getElementById('subtotal').value = "";
+  document.getElementById('monto_iva').value = "";
+  document.getElementById('total').value = "";
+}
 
   function limpiarNumero(texto) {
     return parseFloat(texto.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
@@ -325,6 +320,48 @@
     document.getElementById('iva').addEventListener('change', actualizarCalculo);
     document.getElementById('btnAgregar').addEventListener('click', agregarProducto);
   };
+</script>
+<script>
+  const inputProducto = document.getElementById('producto');
+  const sugerencias = document.getElementById('sugerencias');
+
+  function filtrarProductosAjax() {
+    const texto = inputProducto.value.trim();
+    sugerencias.innerHTML = '';
+
+    if (texto.length < 2) return;
+
+    fetch(`/menu/ajax/buscar-productos/?q=${encodeURIComponent(texto)}`)
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(p => {
+          const item = document.createElement('li');
+          item.className = 'list-group-item list-group-item-action';
+          item.textContent = `[${p.codigo}] ${p.descripcion}`;
+          item.onclick = () => seleccionarProducto(p);
+          sugerencias.appendChild(item);
+        });
+      })
+      .catch(err => console.error("Error al buscar productos:", err));
+  }
+
+  function seleccionarProducto(p) {
+  productoSeleccionado = p;
+  inputProducto.value = `[${p.codigo}] ${p.descripcion}`;
+  document.getElementById('codigo').value = p.codigo;
+  document.getElementById('precio').value = p.precio;
+  sugerencias.innerHTML = '';
+  actualizarCalculo();
+}
+  
+
+  inputProducto.addEventListener('input', filtrarProductosAjax);
+
+  document.addEventListener('click', e => {
+    if (!sugerencias.contains(e.target) && e.target !== inputProducto) {
+      sugerencias.innerHTML = '';
+    }
+  });
 </script>
 </body>
 </html>
