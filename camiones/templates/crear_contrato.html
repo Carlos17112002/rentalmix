@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Nuevo Contrato de Arriendo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f9f9f9; padding: 30px; }
+    .container { max-width: 720px; }
+    .form-label { font-weight: bold; }
+    .resultado { font-size: 1.2rem; font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{% url 'dashboard_camiones' %}" class="btn btn-secondary mb-4">← Volver</a>
+    <h2 class="mb-4">Crear Nuevo Contrato de Arriendo</h2>
+
+    <form method="post">
+      {% csrf_token %}
+      {% if not camion %}
+        <div class="mb-3">
+          <label for="camion" class="form-label">Camión</label>
+          <select name="camion" id="camion" class="form-select" required>
+            <option value="">-- Seleccione --</option>
+            {% for c in camiones %}
+              <option value="{{ c.id }}">[{{ c.patente }}] {{ c.marca }} {{ c.modelo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre del Contrato</label>
+        <input type="text" name="nombre" id="nombre" class="form-control" required>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+          <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="fecha_termino" class="form-label">Fecha de Término</label>
+          <input type="date" name="fecha_termino" id="fecha_termino" class="form-control" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="valor_dia" class="form-label">Valor por Día (CLP)</label>
+        <input type="number" name="valor_dia" id="valor_dia" class="form-control" required>
+      </div>
+
+      <div class="resultado">
+        Total Arriendo: <span id="total_arriendo">$0</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-4">Guardar Contrato</button>
+    </form>
+  </div>
+
+  <script>
+    function calcularTotal() {
+      const inicio = new Date(document.getElementById('fecha_inicio').value);
+      const termino = new Date(document.getElementById('fecha_termino').value);
+      const valorDia = parseFloat(document.getElementById('valor_dia').value) || 0;
+
+      if (inicio && termino && !isNaN(inicio) && !isNaN(termino) && valorDia > 0) {
+        const dias = Math.floor((termino - inicio) / (1000 * 60 * 60 * 24)) + 1;
+        const total = dias > 0 ? dias * valorDia : 0;
+        document.getElementById('total_arriendo').textContent = `$${total.toLocaleString('es-CL')}`;
+      } else {
+        document.getElementById('total_arriendo').textContent = `$0`;
+      }
+    }
+
+    document.getElementById('fecha_inicio').addEventListener('change', calcularTotal);
+    document.getElementById('fecha_termino').addEventListener('change', calcularTotal);
+    document.getElementById('valor_dia').addEventListener('input', calcularTotal);
+  </script>
+</body>
+</html>

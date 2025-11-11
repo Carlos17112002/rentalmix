@@ -43,61 +43,68 @@ def agregar_camion(request):
     return render(request, 'agregar_camion.html', {'form': form})
 
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Camion, EstadoPagoCamion, ArriendoCamion
+from .models import Camion, EstadoPagoCamion, ArriendoCamion, Contrato
 
 def camion_detalle(request, camion_id):
     camion = get_object_or_404(Camion, id=camion_id)
-    estados = EstadoPagoCamion.objects.filter(camion=camion).order_by('-fecha_emision')
-    arriendos = ArriendoCamion.objects.filter(camion=camion).order_by('-fecha_inicio')
-
-    if request.method == 'POST' and 'periodo' in request.POST:
-        # Captura de datos
-        presente = int(request.POST.get('presente_estado_pago', 0))
-        devolucion = int(request.POST.get('devolucion_anticipo', 0))
-        multas = int(request.POST.get('descuentos_multas', 0))
-        seguro = int(request.POST.get('devolucion_seguro', 0))
-        descuento_pct = float(request.POST.get('descuento_especial', 0))
-
-        subtotal = presente - devolucion - multas + seguro
-        subtotal_con_descuento = int(subtotal - (subtotal * descuento_pct / 100))
-        iva = int(subtotal_con_descuento * 0.19)
-        total_estado = subtotal_con_descuento + iva
-
-        retencion = int(request.POST.get('retencion', 0))
-        devolucion_retenciones = int(request.POST.get('devolucion_retenciones', 0))
-        saldo_anterior_retenciones = int(request.POST.get('saldo_anterior_retenciones', 0))
-        nuevo_saldo_retenciones = saldo_anterior_retenciones + retencion - devolucion_retenciones
-
-        total_pagar = total_estado - retencion
-
-        EstadoPagoCamion.objects.create(
-            camion=camion,
-            periodo=request.POST.get('periodo'),
-            anticipo=int(request.POST.get('anticipo', 0)),
-            avance_a_la_fecha=int(request.POST.get('avance_a_la_fecha', 0)),
-            estado_pago_anterior=int(request.POST.get('estado_pago_anterior', 0)),
-            presente_estado_pago=presente,
-            devolucion_anticipo=devolucion,
-            descuentos_multas=multas,
-            saldo_anterior_anticipo=int(request.POST.get('saldo_anterior_anticipo', 0)),
-            devolucion_seguro=seguro,
-            nuevo_saldo_anticipo=seguro,  # si es igual a devolución
-            subtotal=subtotal,
-            descuento_especial=descuento_pct,
-            subtotal_con_descuento=subtotal_con_descuento,
-            iva=iva,
-            total_estado_pago=total_estado,
-            saldo_anterior_retenciones=saldo_anterior_retenciones,
-            retencion=retencion,
-            devolucion_retenciones=devolucion_retenciones,
-            nuevo_saldo_retenciones=nuevo_saldo_retenciones,
-            total_a_pagar=total_pagar
-        )
-        return redirect('camion_detalle', camion_id=camion.id)
-
+    contratos = Contrato.objects.filter(camion=camion).order_by('-fecha_inicio')
     return render(request, 'camion_detalle.html', {
         'camion': camion,
-        'estados': estados,
-        'arriendos': arriendos,
-        'form_arriendo': None
+        'contratos': contratos
+    })
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from datetime import date
+from .models import Contrato, Camion
+
+def crear_contrato(request, camion_id=None):
+    camion = get_object_or_404(Camion, id=camion_id) if camion_id else None
+    camiones = Camion.objects.all() if not camion else None
+
+    if request.method == 'POST':
+        # Obtener datos del formulario
+        camion_id_post = request.POST.get('camion') or (camion.id if camion else None)
+        nombre = request.POST.get('nombre')
+        fecha_inicio = request.POST.get('fecha_inicio')
+        fecha_termino = request.POST.get('fecha_termino')
+        valor_dia = request.POST.get('valor_dia')
+
+        # Validaciones básicas
+        if not (camion_id_post and nombre and fecha_inicio and fecha_termino and valor_dia):
+            messages.error(request, "Completa todos los campos.")
+            return redirect(request.path)
+
+        camion_obj = get_object_or_404(Camion, id=camion_id_post)
+        fecha_inicio = date.fromisoformat(fecha_inicio)
+        fecha_termino = date.fromisoformat(fecha_termino)
+
+        if fecha_termino < fecha_inicio:
+            messages.error(request, "La fecha de término no puede ser anterior a la de inicio.")
+            return redirect(request.path)
+
+        # Crear contrato
+        contrato = Contrato.objects.create(
+            camion=camion_obj,
+            nombre=nombre,
+            fecha_inicio=fecha_inicio,
+            fecha_termino=fecha_termino,
+            valor_dia=int(valor_dia)
+        )
+
+        messages.success(request, "Contrato creado correctamente.")
+        return redirect('camion_detalle', camion_id=camion_obj.id)
+
+    return render(request, 'crear_contrato.html', {
+        'camion': camion,
+        'camiones': camiones
+    })
+
+from django.shortcuts import render, get_object_or_404
+from .models import Contrato
+
+def detalle_contrato(request, contrato_id):
+    contrato = get_object_or_404(Contrato, id=contrato_id)
+    return render(request, 'detalle_contrato.html', {
+        'contrato': contrato
     })

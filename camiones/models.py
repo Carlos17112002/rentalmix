@@ -65,3 +65,27 @@ class ArriendoCamion(models.Model):
     @property
     def total(self):
         return self.dias_arriendo * self.valor_por_dia
+
+from django.db import models
+
+
+class Contrato(models.Model):
+    camion = models.ForeignKey(Camion, on_delete=models.CASCADE, related_name='contratos')
+    nombre = models.CharField(max_length=100, help_text="Nombre o referencia del contrato")
+    fecha_inicio = models.DateField()
+    fecha_termino = models.DateField()
+    valor_dia = models.PositiveIntegerField(help_text="Valor diario del arriendo en CLP")
+
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    @property
+    def dias_arriendo(self):
+        return (self.fecha_termino - self.fecha_inicio).days + 1
+
+    @property
+    def total_arriendo(self):
+        return self.dias_arriendo * self.valor_dia
+
+    def __str__(self):
+        return f"Contrato #{self.id} - {self.nombre}"

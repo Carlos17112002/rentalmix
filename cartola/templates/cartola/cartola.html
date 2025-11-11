@@ -14,10 +14,26 @@
       background-color: #f9f9f9;
       padding: 40px;
     }
-    h2 {
+    .logo-centro {
       text-align: center;
-      margin-bottom: 30px;
-      color: #003366;
+      margin-bottom: 24px;
+      max-height: 120px;
+    }
+    .logo-centro img {
+      max-height: 120px;
+    }
+    .titulo-cartola {
+      font-size: 34px;
+      font-weight: 700;
+      background-color: #ffffff;
+      border: 2px solid #0d6efd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #0d6efd;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: 0 auto 40px auto;
+      text-align: center;
     }
     .saldo-info {
       text-align: center;
@@ -56,32 +72,40 @@
   </style>
 </head>
 <body>
-  <div class="text-center no-print mt-4">
-    <button onclick="window.print()" class="btn btn-outline-dark">🖨️ Imprimir Cartola</button>
+
+<div class="logo-centro">
+  <img src="{% static 'img/logo.png' %}" alt="Logo Empresa">
+</div>
+
+<div class="text-center">
+  <div class="titulo-cartola">Cartola - {{ mes }}/{{ año }}</div>
+</div>
+
+<!-- Filtros y botones alineados -->
+<form method="get" class="row g-3 mb-4 no-print align-items-end">
+  <div class="col-md-3">
+    <label for="mes" class="form-label">Mes</label>
+    <select name="mes" id="mes" class="form-select">
+      {% for m in 1|to_range:12 %}
+        <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label for="año" class="form-label">Año</label>
+    <input type="number" name="año" id="año" class="form-control" value="{{ año }}">
+  </div>
+  <div class="col-md-3">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+  </div>
+  <div class="col-md-3 text-end">
+    <button onclick="window.print()" type="button" class="btn btn-outline-dark">🖨️ Imprimir Cartola</button>
     <a href="{% url 'menu_rental' %}" class="btn btn-secondary ms-2">← Volver al menú</a>
   </div>
+</form>
 
-  <form method="get" class="row g-3 mb-4 no-print">
-    <div class="col-md-3">
-      <label for="mes" class="form-label">Mes</label>
-      <select name="mes" id="mes" class="form-select">
-        {% for m in 1|to_range:12 %}
-          <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label for="año" class="form-label">Año</label>
-      <input type="number" name="año" id="año" class="form-control" value="{{ año }}">
-    </div>
-    <div class="col-md-3 align-self-end">
-      <button type="submit" class="btn btn-primary">Filtrar</button>
-    </div>
-  </form>
-
-  <h2>Cartola - {{ mes }}/{{ año }}</h2>
-
-  <div class="saldo-info">
+<!-- Saldo inicial -->
+<div class="saldo-info">
   {% if mes == 1 %}
     <form method="post" class="d-inline-block">
       {% csrf_token %}
@@ -96,41 +120,44 @@
   {% endif %}
 </div>
 
-  <table class="table table-bordered table-cartola">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Detalle</th>
-        <th>N° Documento</th>
-        <th>Cargo (Compras, Cotizaciones, Impuestos)</th>
-        <th>Abono (Ventas)</th>
-        <th>Saldo</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for t in transacciones %}
-      <tr class="{% if t.abono > 0 %}ventas-row{% else %}compras-row{% endif %}">
-        <td>{{ t.fecha }}</td>
-        <td>{{ t.detalle }}</td>
-        <td>{{ t.documento }}</td>
-        <td>
-          {% if t.cargo > 0 %}
-            ${{ t.cargo|floatformat:0|formato_chileno }}
-          {% endif %}
-        </td>
-        <td>
-          {% if t.abono > 0 %}
-            ${{ t.abono|floatformat:0|formato_chileno }}
-          {% endif %}
-        </td>
-        <td>${{ t.saldo|floatformat:0|formato_chileno }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<!-- Tabla de transacciones -->
+<table class="table table-bordered table-cartola">
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Detalle</th>
+      <th>N° Documento</th>
+      <th>Cargo (Compras, Cotizaciones, Impuestos)</th>
+      <th>Abono (Ventas)</th>
+      <th>Saldo</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in transacciones %}
+    <tr class="{% if t.abono > 0 %}ventas-row{% else %}compras-row{% endif %}">
+      <td>{{ t.fecha }}</td>
+      <td>{{ t.detalle }}</td>
+      <td>{{ t.documento }}</td>
+      <td>
+        {% if t.cargo > 0 %}
+          ${{ t.cargo|floatformat:0|formato_chileno }}
+        {% endif %}
+      </td>
+      <td>
+        {% if t.abono > 0 %}
+          ${{ t.abono|floatformat:0|formato_chileno }}
+        {% endif %}
+      </td>
+      <td>${{ t.saldo|floatformat:0|formato_chileno }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-  <div class="saldo-final">
-    <p>Saldo final: ${{ saldo_final|floatformat:0|formato_chileno }}</p>
-  </div>
+<!-- Saldo final -->
+<div class="saldo-final">
+  <p>Saldo final: ${{ saldo_final|floatformat:0|formato_chileno }}</p>
+</div>
+
 </body>
 </html>

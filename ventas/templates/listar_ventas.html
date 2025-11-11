@@ -137,7 +137,7 @@
             <th>Neto</th>
             <th>IVA</th>
             <th>Total</th>
-            <th>Estado</th>
+            <th class="no-print">Estado</th>
             <th>Fecha de pago</th>
             <th class="no-print">Comprobante</th>
             <th class="no-print">Boucher Pago</th>
@@ -160,7 +160,7 @@
               <td>${{ v.monto_neto|floatformat:0|formato_chileno }}</td>
               <td>${{ v.monto_iva|floatformat:0|formato_chileno }}</td>
               <td>${{ v.monto_total|floatformat:0|formato_chileno }}</td>
-              <td>
+              <td class="no-print">
                 {% if v.pagada %}
                   <span class="text-success">Pagada</span>
                 {% else %}
@@ -190,7 +190,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="7" class="text-end fw-bold">Total:</td>
+            <td colspan="6" class="text-end fw-bold">Total:</td>
             <td class="fw-bold">
               ${{ total_filtrado|floatformat:0|formato_chileno }}
             </td>

@@ -128,7 +128,7 @@
           <table class="table table-bordered table-striped">
             <thead class="table-light">
               <tr>
-                <th>Marcar</th>
+                <th class="no-print">Marcar</th>
                 <th>Folio</th>
                 <th>Fecha</th>
                 <th>Proveedor</th>
@@ -146,7 +146,7 @@
             <tbody>
               {% for f in facturas %}
                 <tr>
-                  <td>
+                  <td class="no-print">
                     {% if f.pagada %}
                       <input type="checkbox" name="factura_id" value="{{ f.id }}" checked disabled>
                     {% else %}

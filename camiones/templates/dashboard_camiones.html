@@ -41,10 +41,12 @@
             </a>
           {% endfor %}
         </div>
+        
       </div>
-
+      
       <!-- Panel principal -->
       <div class="col-md-9 main-panel">
+        <a href="{% url 'menu_rental' %}" class="btn btn-secondary mt-4 w-20">← Volver al Menú Principal</a>
         {% if camion %}
           <h3>Camión {{ camion.patente }}</h3>
           <div class="mb-3">
@@ -114,7 +116,9 @@
             </tbody>
           </table>
         {% endif %}
+        
       </div>
+      
     </div>
   </div>
 
