@@ -1,9 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-
-# Create your views here.
-
 @login_required(login_url='login')
 def index(request):
     return render(request, 'index.html')
@@ -1098,3 +1095,8 @@ from .models import Cotizacion
 def detalles_cotizacion(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
     return render(request, 'detalles_cotizacion.html', {'cotizacion': cotizacion})
+
+def eliminar_cotizacion(request, cotizacion_id):
+    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+    cotizacion.delete()
+    return redirect('listado_cotizaciones')

@@ -21,6 +21,7 @@ class FacturaVenta(models.Model):
     libro = models.ForeignKey(LibroVenta, on_delete=models.SET_NULL, null=True, blank=True, related_name='facturas')
     comprobante = models.FileField(upload_to='comprobantes_ventas/', null=True, blank=True)
     boucher_pago = models.FileField(upload_to='bouchers_pagos_ventas/', null=True, blank=True)
+    origen_libro = models.CharField(max_length=50, blank=True, null=True)
     
 
 

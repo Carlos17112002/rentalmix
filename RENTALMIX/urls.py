@@ -31,6 +31,7 @@ urlpatterns = [
     path('obligaciones/', include('obligaciones.urls')),
     path('login/', include('Login.urls')),
     path('camiones', include('camiones.urls')),
+    path('camion', include('camion.urls')),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

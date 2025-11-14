@@ -6,7 +6,7 @@ from django.db import models
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=100)
-    rut = models.CharField(max_length=12)
+    rut = models.CharField(max_length=15)
     direccion = models.CharField(max_length=200)
     telefono = models.CharField(max_length=20)
     correo = models.EmailField()
@@ -22,7 +22,7 @@ from django.db import models
 class Producto(models.Model):
     descripcion = models.CharField(max_length=200)
     codigo = models.CharField(max_length=50, unique=True)
-    precio_costo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    precio_costo_unitario = models.DecimalField(max_digits=10, decimal_places=0)
     iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
     neto = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -166,7 +166,7 @@ class ProductoCompra(models.Model):
     fecha_compra = models.DateField(default=date.today)
     cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2)
+    iva_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=19.00)
     neto = models.DecimalField(max_digits=10, decimal_places=2)
     impuesto = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -207,8 +207,6 @@ class PagoCamiones(models.Model):
         return f"Pago {self.mes} - {self.total}"
     
 # models.py
-
-
 
 class NumeroOrdenDisponible(models.Model):
     numero = models.PositiveIntegerField(unique=True)

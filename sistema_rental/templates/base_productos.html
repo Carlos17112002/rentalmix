@@ -73,6 +73,7 @@
       <button type="submit" class="btn btn-dark">Filtrar</button>
     </form>
     <div class="d-flex gap-2">
+      <a href="{% url 'importar_productos' %}" class="btn btn-outline-primary">⬆️ Importar Productos</a>
       <button onclick="window.print()" class="btn btn-outline-secondary">🖨️ Imprimir</button>
       <a href="{% url 'menu_rental' %}" class="btn btn-outline-dark">⬅️ Volver</a>
     </div>
@@ -114,6 +115,5 @@
       </tbody>
     </table>
   </div>
-
 </body>
 </html>

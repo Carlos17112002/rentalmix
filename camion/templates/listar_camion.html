@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Listado de Camiones</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; padding-top: 40px; }
+    .container { max-width: 900px; }
+    .table th, .table td { vertical-align: middle; font-size: 0.95rem; }
+    .table th { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>🚚 Camiones Registrados</h3>
+      <a href="{% url 'camion' %}" class="btn btn-primary">➕ Nuevo Camión</a>
+    </div>
+
+    {% if camiones %}
+      <table class="table table-bordered table-striped">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Subcontrato</th>
+            <th>Obra</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for camion in camiones %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ camion.subcontrato }}</td>
+              <td>{{ camion.obra }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="alert alert-info">No hay camiones registrados aún.</div>
+    {% endif %}
+  </div>
+</body>
+</html>

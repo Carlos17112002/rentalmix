@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estado de Pago Completo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; padding-top: 40px; }
+    .container { max-width: 960px; }
+    .section-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; color: #0d6efd; }
+    .summary-box {
+      background-color: #f1f3f5;
+      border-radius: 6px;
+      padding: 15px;
+      font-size: 0.95rem;
+    }
+    .summary-box h6 {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .summary-box .row + .row {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3 class="mb-4">📄 Estado de Pago para Camión: {{ camion.subcontrato }}</h3>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Parte 1: Datos del contrato -->
+      <div class="section-title">🧾 Datos del Contrato</div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label">Obra</label>
+          {{ form.obra }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha Inicio</label>
+          {{ form.fecha_inicio }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha Término</label>
+          {{ form.fecha_termino }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">UF Pactada</label>
+          {{ form.uf_pactada }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">UF del Día</label>
+          {{ form.uf_del_dia }}
+        </div>
+      </div>
+
+      <!-- Cálculos automáticos -->
+      <div class="summary-box mb-4">
+        <h6>🧮 Cálculos del Contrato</h6>
+        <div class="row">
+          <div class="col-7">Días de Arriendo:</div>
+          <div class="col-5 text-end" id="dias_arriendo">0</div>
+        </div>
+        <div class="row">
+          <div class="col-7">Valor Total:</div>
+          <div class="col-5 text-end" id="valor_total">$0</div>
+        </div>
+        <div class="row">
+          <div class="col-7">Valor por Día:</div>
+          <div class="col-5 text-end" id="valor_dia">$0</div>
+        </div>
+      </div>
+
+      <!-- Parte 2: Estado de pago -->
+      <div class="section-title">💰 Estado de Pago</div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label class="form-label">Avance a la Fecha</label>
+          {{ form.avance_a_la_fecha }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Estado de Pago Anterior</label>
+          {{ form.estado_pago_anterior }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Devolución de Seguro</label>
+          {{ form.devolucion_seguro }}
+        </div>
+      </div>
+
+      <!-- Cálculos del estado de pago -->
+      <div class="summary-box mb-4">
+        <h6>📊 Cálculo Estado de Pago</h6>
+        <div class="row">
+          <div class="col-7">Presente Estado de Pago:</div>
+          <div class="col-5 text-end" id="presente_estado">$0</div>
+        </div>
+        <div class="row">
+          <div class="col-7">Subtotal:</div>
+          <div class="col-5 text-end" id="subtotal">$0</div>
+        </div>
+        <div class="row">
+          <div class="col-7">IVA (19%):</div>
+          <div class="col-5 text-end" id="iva">$0</div>
+        </div>
+        <div class="row">
+          <div class="col-7">Total Estado de Pago:</div>
+          <div class="col-5 text-end" id="total_pago">$0</div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">💾 Guardar Estado de Pago</button>
+      <a href="{% url 'dashboard_camion' %}" class="btn btn-outline-secondary">← Volver</a>
+    </form>
+  </div>
+
+  <script>
+    function calcular() {
+      const ufPactada = parseFloat(document.getElementById('id_uf_pactada')?.value) || 0;
+      const ufDia = parseFloat(document.getElementById('id_uf_del_dia')?.value) || 0;
+      const inicio = new Date(document.getElementById('id_fecha_inicio')?.value);
+      const termino = new Date(document.getElementById('id_fecha_termino')?.value);
+      const devolucion = parseFloat(document.getElementById('id_devolucion_seguro')?.value) || 0;
+
+      const total = ufPactada * ufDia;
+      const dias = (termino - inicio) / (1000 * 60 * 60 * 24) + 1;
+      const valorDia = dias > 0 ? total / dias : 0;
+      const subtotal = total - devolucion;
+      const iva = subtotal * 0.19;
+      const totalPago = subtotal + iva;
+
+      document.getElementById('dias_arriendo').textContent = dias > 0 ? dias : 0;
+      document.getElementById('valor_total').textContent = `$${total.toLocaleString('es-CL', {maximumFractionDigits: 0})}`;
+      document.getElementById('valor_dia').textContent = `$${valorDia.toLocaleString('es-CL', {maximumFractionDigits: 0})}`;
+      document.getElementById('presente_estado').textContent = `$${total.toLocaleString('es-CL', {maximumFractionDigits: 0})}`;
+      document.getElementById('subtotal').textContent = `$${subtotal.toLocaleString('es-CL', {maximumFractionDigits: 0})}`;
+      document.getElementById('iva').textContent = `$${iva.toLocaleString('es-CL', {maximumFractionDigits: 0})}`;
+      document.getElementById('total_pago').textContent = `$${totalPago.toLocaleString('es-CL', {maximumFractionDigits: 0})}`;
+    }
+
+    document.addEventListener('input', calcular);
+    document.addEventListener('change', calcular);
+  </script>
+</body>
+</html>

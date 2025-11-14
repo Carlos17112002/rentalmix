@@ -127,6 +127,9 @@
         <div class="table-responsive">
           <table class="table table-bordered table-striped">
             <thead class="table-light">
+              <th class="no-print">
+                <input type="checkbox" id="select-all" title="Seleccionar todas">
+              </th>
               <tr>
                 <th class="no-print">Marcar</th>
                 <th>Folio</th>
@@ -150,7 +153,7 @@
                     {% if f.pagada %}
                       <input type="checkbox" name="factura_id" value="{{ f.id }}" checked disabled>
                     {% else %}
-                      <input type="checkbox" name="factura_id" value="{{ f.id }}">
+                      <input type="checkbox" name="factura_id" value="{{ f.id }}" class="factura-checkbox">
                     {% endif %}
                   </td>
                   <td>{{ f.folio }}</td>
@@ -216,5 +219,19 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.factura-checkbox');
+
+    selectAll.addEventListener('change', function () {
+      checkboxes.forEach(cb => {
+        if (!cb.disabled) {
+          cb.checked = selectAll.checked;
+        }
+      });
+    });
+  });
+</script>
 </body>
 </html>

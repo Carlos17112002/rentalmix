@@ -115,6 +115,9 @@
                     <a href="{% url 'detalles_cotizacion' cotizacion.id %}" class="btn btn-primary btn-sm">
                       Ver detalle
                     </a>
+                    <a href="{% url 'eliminar_cotizacion' cotizacion.id %}" class="btn btn-danger btn-sm">
+                      Eliminar
+                    </a>
                   </td>
                 </tr>
               {% endif %}
